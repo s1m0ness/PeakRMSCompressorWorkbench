@@ -1,8 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="qtaAn6" name="PeakRMSCompressorWorkbench" projectType="audioplug"
-              useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+              useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1"
+              defines="JUCE_MODAL_LOOPS_PERMITTED=1">
   <MAINGROUP id="Nbi9PW" name="PeakRMSCompressorWorkbench">
+    <GROUP id="{D9D43902-BD28-2EBF-36FE-3B6F5196BFB9}" name="metrics">
+      <GROUP id="{4235B6AE-7156-39A8-E1EA-F91B8848FFBB}" name="include">
+        <FILE id="aaS9BR" name="Metrics.h" compile="0" resource="0" file="Source/metrics/include/Metrics.h"/>
+      </GROUP>
+      <FILE id="a4BW01" name="Metrics.cpp" compile="1" resource="0" file="Source/metrics/Metrics.cpp"/>
+    </GROUP>
+    <GROUP id="{9B63E71C-3202-91A7-DCE9-2BD48DC6D209}" name="util">
+      <GROUP id="{2454C16A-6257-B439-F6EE-8957025A6120}" name="include">
+        <FILE id="FTLXsm" name="Constants.h" compile="0" resource="0" file="Source/util/include/Constants.h"/>
+      </GROUP>
+    </GROUP>
+    <GROUP id="{946AFF05-5295-41D4-1E7F-7034ADB69247}" name="gui">
+      <GROUP id="{2D8842C4-B69E-2D9E-B91D-ABC286097C31}" name="include">
+        <FILE id="JkVZUO" name="Meter.h" compile="0" resource="0" file="Source/gui/include/Meter.h"/>
+        <FILE id="mPJT67" name="MeterBackground.h" compile="0" resource="0"
+              file="Source/gui/include/MeterBackground.h"/>
+        <FILE id="mL6TZy" name="MeterNeedle.h" compile="0" resource="0" file="Source/gui/include/MeterNeedle.h"/>
+      </GROUP>
+      <FILE id="JrT3Yr" name="Meter.cpp" compile="1" resource="0" file="Source/gui/Meter.cpp"/>
+      <FILE id="xsInwV" name="MeterBackground.cpp" compile="1" resource="0"
+            file="Source/gui/MeterBackground.cpp"/>
+      <FILE id="ambo2p" name="MeterNeedle.cpp" compile="1" resource="0" file="Source/gui/MeterNeedle.cpp"/>
+    </GROUP>
+    <GROUP id="{9F5C2AA2-08CA-2DCD-0020-B7D8D5417705}" name="dsp">
+      <GROUP id="{6E3F405A-0BE9-F4A3-7BF3-4BB987D43A70}" name="include">
+        <FILE id="EbvHCl" name="Compressor.h" compile="0" resource="0" file="Source/dsp/include/Compressor.h"/>
+        <FILE id="MRdktt" name="GainComputer.h" compile="0" resource="0" file="Source/dsp/include/GainComputer.h"/>
+        <FILE id="BxfqLb" name="LevelEnvelopeFollower.h" compile="0" resource="0"
+              file="Source/dsp/include/LevelEnvelopeFollower.h"/>
+        <FILE id="z1EYP7" name="PeakLevelDetector.h" compile="0" resource="0"
+              file="Source/dsp/include/PeakLevelDetector.h"/>
+        <FILE id="vK0HPc" name="RMSLevelDetector.h" compile="0" resource="0"
+              file="Source/dsp/include/RMSLevelDetector.h"/>
+      </GROUP>
+      <FILE id="e7S7xN" name="PeakLevelDetector.cpp" compile="1" resource="0"
+            file="Source/dsp/PeakLevelDetector.cpp"/>
+      <FILE id="ntynfZ" name="RMSLevelDetector.cpp" compile="1" resource="0"
+            file="Source/dsp/RMSLevelDetector.cpp"/>
+      <FILE id="S7iia8" name="Compressor.cpp" compile="1" resource="0" file="Source/dsp/Compressor.cpp"/>
+      <FILE id="IOgwRQ" name="GainComputer.cpp" compile="1" resource="0"
+            file="Source/dsp/GainComputer.cpp"/>
+      <FILE id="EfsKB8" name="LevelEnvelopeFollower.cpp" compile="1" resource="0"
+            file="Source/dsp/LevelEnvelopeFollower.cpp"/>
+    </GROUP>
     <GROUP id="{BEFD0802-5676-6175-CC17-1831F28DC4CC}" name="Source">
       <FILE id="harwPp" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -23,6 +68,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -49,6 +95,7 @@
         <MODULEPATH id="juce_graphics" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>
