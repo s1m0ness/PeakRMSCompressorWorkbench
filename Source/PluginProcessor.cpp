@@ -721,7 +721,7 @@ juce::File PeakRMSCompressorWorkbenchAudioProcessor::createUniqueFile(const juce
 
 void PeakRMSCompressorWorkbenchAudioProcessor::createFolderForSaving()
 {
-    juce::File testingFolder = outputDirectory.getChildFile("Testing");
+    juce::File testingFolder = outputDirectory.getChildFile("PeakRMSCompressorWorkbench_testing_results");
 
     if (!testingFolder.exists())
     {
