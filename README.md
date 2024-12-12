@@ -1,47 +1,124 @@
+
 # PeakRMSCompressorWorkbench
 
-This repository contains the **PeakRMSCompressorWorkbench**, a JUCE-based application designed for testing of audio dynamic range compression algorithms. The application provides tools for measuring and comparing the effects of dynamic range compression using peak-based and rms-based level detection on audio signals.
+This repository hosts **PeakRMSCompressorWorkbench**, a JUCE-based application designed to test and analyze audio dynamic range compression algorithms. It provides tools to measure and compare the effects of compression using peak-based and RMS-based detection methods.
 
 ---
 
 ## Features
-- **Peak-based and RMS-based Compression**: Evaluate compression effects using both approaches.
-- **Metrics Extraction**: Includes LUFS, dynamic range, crest factor, and more.
-- **User Configurations**: Configurable presets and real-time parameter adjustment.
-- **Export Metrics**: Save detailed metrics to output files.
+
+- **Peak and RMS Compression**: Analyze compression behavior using both peak and RMS detection.
+- **Metrics Extraction**: LUFS, dynamic range, crest factor, and other key metrics.
+- **Real-time Playback**: Integrates with AudioFilePlayerPlugin for testing in real-time.
 
 ---
 
-## Windows setup
+## Windows Setup
 
 ### Prerequisites
-To run this project, you'll need:
+
+To set up and run this project, ensure you have the following installed:
+
 1. [JUCE](https://juce.com/): A C++ framework for audio application development.
-2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): A JUCE example project required for real-time audio compression playback.
+2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback.
+3. [Visual Studio Community Edition](https://visualstudio.microsoft.com/): The IDE for building the project.
 
 ---
 
-### Step 1: Download JUCE
-Follow these steps to set up JUCE on Windows:
-
-1. **Download JUCE**:
-   - Visit [JUCE Downloads](https://juce.com/get-juce) and download the latest version.
-   - Extract the downloaded ZIP file to a location of your choice.
-
-2. **Install Visual Studio**:
-   - Download and install [Visual Studio Community Edition](https://visualstudio.microsoft.com/) (or a compatible version).
-   - During installation, ensure you select the **Desktop Development with C++** workload.
-
-3. **Open JUCE Projucer**:
-   - Navigate to the JUCE folder and launch the `Projucer.exe` file.
-
-4. **Set Global Paths**:
-   - In Projucer, go to `File -> Global Paths`.
-   - Set the global path to your Visual Studio installation.
+### Step-by-Step Setup Guide
+*(Based on [this video tutorial](https://youtu.be/Mo0Oco3Vimo?si=Sj4i6uZfiMJ6dL5S&t=1360))*
 
 ---
 
-### Step 2: Download AudioFilePlayerPlugin
-1. Clone the repository for `AudioFilePlayerPlugin`:
-   ```bash
-   git clone https://github.com/hollance/AudioFilePlayerPlugin.git
+#### 1. Install Visual Studio
+*(Video reference: [2:13](https://youtu.be/Mo0Oco3Vimo?si=KT-B_rA4bZAtaKIj&t=1397))*
+- Download and install **[Visual Studio Community Edition](https://visualstudio.microsoft.com/)**.
+- During installation, select the **Desktop Development with C++** workload.
+
+---
+
+#### 2. Install JUCE Framework
+*(Video reference: [27:32](https://youtu.be/Mo0Oco3Vimo?si=JDXoQBc6IURfOlis&t=1652))*
+- Clone the JUCE repository:
+  ```bash
+  git clone https://github.com/juce-framework/JUCE.git
+  ```
+- Navigate to the Projucer build directory:
+  ```plaintext
+  JUCE\extras\Projucer\Builds\VisualStudio2022\
+  ```
+- Open `Projucer.sln` in Visual Studio and build it.
+
+---
+
+#### 3. Set Up AudioFilePlayerPlugin
+*(Video reference: [42:06](https://youtu.be/Mo0Oco3Vimo?si=l5YVJTxdnHX2p-Gb&t=2526))*
+- Clone the AudioFilePlayerPlugin repository:
+  ```bash
+  git clone https://github.com/hollance/AudioFilePlayerPlugin.git
+  ```
+- Navigate to the build directory:
+  ```plaintext
+  AudioFilePlayerPlugin\Builds\VisualStudio2022\
+  ```
+- Open `AudioFilePlayer.sln` in Visual Studio and build it.
+
+---
+
+#### 4. Set Up AudioPluginHost
+*(Video reference: [35:32](https://youtu.be/Mo0Oco3Vimo?si=WoisnAayUc8t_EST&t=2132))*
+- Navigate to the JUCE AudioPluginHost directory:
+  ```plaintext
+  JUCE\extras\AudioPluginHost\
+  ```
+- Open `AudioPluginHost.jucer` in Projucer and build the solution.
+
+---
+
+#### 5. Configure the PeakRMSCompressorWorkbench Project
+*(Video reference: [36:06](https://youtu.be/Mo0Oco3Vimo?si=rt7h6I_aILSQKOo4&t=2166))*
+- Navigate to your `PeakRMSCompressorWorkbench` directory.
+- Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
+- In Visual Studio:
+  - Right-click on `PeakRMSCompressorWorkbench_VST3` in Solution Explorer and select **Properties**.
+  - Go to **Configuration Properties > Debugging**.
+  - Set the **Command** field to point to:
+    ```plaintext
+    JUCE\extras\AudioPluginHost\Builds\VisualStudio2022\x64\Debug\App\AudioPluginHost.exe
+    ```
+  - Click **Apply**.
+
+---
+
+#### 6. Modify VST3 Permissions
+*(Video reference: [37:36](https://youtu.be/Mo0Oco3Vimo?si=sD74MpbJAyOmU3MD&t=2256))*
+- Navigate to the following directory:
+  ```plaintext
+  C:\Program Files\Common Files\
+  ```
+- Right-click the `VST3` folder, select **Properties**, then go to the **Security** tab.
+- Select **Users** and allow modification permissions. Click **Apply**.
+
+---
+
+#### 7. Test the Project
+*(Video reference: [38:49](https://youtu.be/Mo0Oco3Vimo?si=4A2KMZ622XDUdusK&t=2329))*
+- Set `PeakRMSCompressorWorkbench_VST3` as the startup project in Visual Studio.
+- Build and run the project.
+- In **AudioPluginHost**:
+  - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
+  - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
+  - Save the configuration as a filter graph file:
+    ```plaintext
+    PeakRMSCompressorWorkbench\PeakRMSCompressorWorkbench.filtergraph
+    ```
+
+---
+
+## Notes
+- Make sure the **AudioPluginHost.exe** path is correctly set in the project properties.
+- If you encounter issues with VST scanning, ensure that the VST3 folder permissions are correctly configured.
+
+---
+
+With this setup, you’re ready to test the **PeakRMSCompressorWorkbench** application and explore dynamic range compression metrics and real-time playback.
