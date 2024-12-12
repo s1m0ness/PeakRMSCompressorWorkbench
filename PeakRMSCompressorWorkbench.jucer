@@ -12,7 +12,9 @@
     </GROUP>
     <GROUP id="{9B63E71C-3202-91A7-DCE9-2BD48DC6D209}" name="util">
       <GROUP id="{2454C16A-6257-B439-F6EE-8957025A6120}" name="include">
+        <FILE id="IcKVfN" name="Config.h" compile="0" resource="0" file="Source/util/include/Config.h"/>
         <FILE id="FTLXsm" name="Constants.h" compile="0" resource="0" file="Source/util/include/Constants.h"/>
+        <FILE id="IOOGEV" name="Presets.h" compile="0" resource="0" file="Source/util/include/Presets.h"/>
       </GROUP>
     </GROUP>
     <GROUP id="{946AFF05-5295-41D4-1E7F-7034ADB69247}" name="gui">

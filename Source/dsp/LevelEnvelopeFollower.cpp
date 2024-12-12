@@ -9,7 +9,7 @@
  * - Updates the peak value based on audio input samples.
  * - Returns the current peak level.
  *
- * NOTE: This implementation directly reuses CTAGDRC code for peak level envlope follower without modification.
+ * NOTE: This implementation directly reuses CTAGDRC code for peak level envelope follower.
  * 
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.
@@ -50,10 +50,8 @@ void LevelEnvelopeFollower::setPeakDecay(float dc)
 void LevelEnvelopeFollower::updatePeak(const float* const* channelData, int numChannels, int numSamples)
 {
     assert(numChannels >= 0 && numSamples >= 0 && channelData != nullptr);
-    if (numChannels > 0 && numSamples > 0)
-    {
-        for (int i = 0; i < numSamples; ++i)
-        {
+    if (numChannels > 0 && numSamples > 0) {
+        for (int i = 0; i < numSamples; ++i) {
             float sum = 0.0f;
             for (int j = 0; j < numChannels; ++j)
                 sum += std::abs(channelData[j][i]);

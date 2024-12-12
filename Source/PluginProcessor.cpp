@@ -6,10 +6,11 @@
  * - Handles audio processing, including compression.
  * - Implements RMS and Peak-based dynamic range compression using the JUCE DSP framework.
  * - Provides support for real-time and offline audio analysis.
- * - Saves compressed audio outputs to user-defined locations.
+ * - Saves compressed audio outputs and extracted metrics to user-defined locations.
  *
  * Additional Features:
- * - Extends the basic JUCE framework to include metrics extraction functionality, enabling dynamic analysis of audio signals.
+ * - Extends the basic JUCE framework to include metrics extraction functionality, enabling analysis 
+ *   of dynamic range compression applied on audio signal, using peak-based or RMS-based level detection.
  *
  * NOTE: This implementation integrates with the JUCE AudioProcessor API and follows its standard plugin structure.
  *
@@ -51,7 +52,7 @@ PeakRMSCompressorWorkbenchAudioProcessor::PeakRMSCompressorWorkbenchAudioProcess
     parameters.addParameterListener("power", this);
     parameters.addParameterListener("mute", this);
     parameters.addParameterListener("isRMS", this);
-    parameters.addParameterListener("inputgain", this);
+    //parameters.addParameterListener("inputgain", this);
 
     parameters.addParameterListener("peak_threshold", this);
     parameters.addParameterListener("peak_ratio", this);
@@ -145,9 +146,6 @@ void PeakRMSCompressorWorkbenchAudioProcessor::changeProgramName (int index, con
 //==============================================================================
 void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-
     compressor.prepare({ sampleRate, static_cast<uint32>(samplesPerBlock), 2 });
     
     inLevelFollower.prepare(sampleRate);
@@ -156,7 +154,9 @@ void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, 
     outLevelFollower.setPeakDecay(0.3f);
     metrics.prepare(sampleRate);
 
-    // Initialize default RMS parameters, since they can have random values if the rms switch wasnt used.
+    createFolderForSaving(); // create testing folder for saving metrics and compressed audio signals
+
+    // Initialize default RMS parameters, since they can have random values if the rms switch wasn't toggled.
     compressor.setRMSThreshold(0.0f); 
     compressor.setRMSRatio(3.0f);         
     compressor.setRMSAttack(50.0f);       
@@ -197,13 +197,11 @@ bool PeakRMSCompressorWorkbenchAudioProcessor::isBusesLayoutSupported (const Bus
 }
 #endif
 
-// REAL-TIME COMPRESSION OF AUDIO COMING FROM THE AUDIOFILEPLAYER
+// REAL-TIME COMPRESSION OF INCOMING AUDIO
 //==============================================================================
-
 void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    if (isMuted)
-    {
+    if (isMuted) {
         buffer.clear(); // Silence the audio
         return;
     }
@@ -213,17 +211,18 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<fl
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     const auto numSamples = buffer.getNumSamples();
     
+    // Clear input buffer
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    //Update input peak metering
+    // Update input peak metering
     inLevelFollower.updatePeak(buffer.getArrayOfReadPointers(), totalNumInputChannels, numSamples);
     currentInput = Decibels::gainToDecibels(inLevelFollower.getPeak());
 
-    // apply compression
+    // Apply compression
     compressor.process(buffer);
 
-    // get max. gain reduction value for gain reduction metering
+    // Get max. gain reduction value for gain reduction metering
     gainReduction = compressor.getMaxGainReduction();
 
     // Update output peak metering
@@ -262,8 +261,6 @@ void PeakRMSCompressorWorkbenchAudioProcessor::setStateInformation (const void* 
 //==============================================================================
 juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAudioProcessor::createParameterLayout()
 {
-    using namespace juce;
-
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back(std::make_unique<AudioParameterBool>("power", "Power", true));
@@ -295,19 +292,29 @@ juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAu
                                                  Constants::Parameter::releaseInterval);
     
     params.push_back(std::make_unique<AudioParameterFloat>("peak_threshold",
-                                                            "Peak Threshold",
+                                                           "Peak Threshold",
                                                             thresholdRange,
                                                             0));
 
     params.push_back(std::make_unique<AudioParameterFloat>("peak_ratio",
-                                                            "Peak Ratio",
+                                                           "Peak Ratio",
                                                             ratioRange,
                                                             3));
 
     params.push_back(std::make_unique<AudioParameterFloat>("peak_knee",
                                                            "Peak Knee",
-                                                           kneeRange,
-                                                           0));
+                                                            kneeRange,
+                                                            0));
+
+    params.push_back(std::make_unique<AudioParameterFloat>("peak_attack",
+                                                           "Peak Attack",
+                                                            attackRange,
+                                                            50));
+
+    params.push_back(std::make_unique<AudioParameterFloat>("peak_release",
+                                                           "Peak Release",
+                                                           releaseRange,
+                                                           250));
 
      params.push_back(std::make_unique<AudioParameterFloat>("peak_makeup",
                                                             "Peak Makeup",
@@ -317,57 +324,45 @@ juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAu
     
     params.push_back(std::make_unique<AudioParameterFloat>("rms_threshold",
                                                            "RMS Threshold",
-                                                           thresholdRange,
-                                                           0));
+                                                            thresholdRange,
+                                                            0));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_ratio",
-                                                            "RMS Ratio",
+                                                           "RMS Ratio",
                                                             ratioRange,
                                                             3));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_knee",
                                                            "RMS Knee",
-                                                           kneeRange,
-                                                           0));
+                                                            kneeRange,
+                                                            0));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_makeup",
                                                            "RMS Makeup",
                                                             makeupRange,
                                                             0));
 
-    params.push_back(std::make_unique<AudioParameterFloat>("peak_attack",
-                                                            "Peak Attack",
-                                                            attackRange,
-                                                            50));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_attack",
                                                            "RMS Attack",
                                                            attackRange,
                                                            50));
 
-    params.push_back(std::make_unique<AudioParameterFloat>("peak_release",
-                                                           "Peak Release",
-                                                           releaseRange,
-                                                           250));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_release",
                                                            "RMS Release",
                                                            releaseRange,
                                                            250));
-    
-
-
     return { params.begin(), params.end() };
 }
 
 void PeakRMSCompressorWorkbenchAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
-    /*if (parameterID == "inputgain") compressor.setInput(newValue);*/
-    /*else if (parameterID == "mix") compressor.setMix(newValue);*/
     if (parameterID == "power") compressor.setPower(!static_cast<bool>(newValue));
     else if (parameterID == "mute") isMuted = static_cast<bool>(newValue);
     else if (parameterID == "isRMS") updateCompressionMode(static_cast<bool>(newValue));
 
+    // Peak parameters
     else if (parameterID == "peak_threshold") compressor.setPeakThreshold(newValue);
     else if (parameterID == "peak_ratio") compressor.setPeakRatio(newValue);
     else if (parameterID == "peak_knee") compressor.setPeakKnee(newValue);
@@ -375,6 +370,7 @@ void PeakRMSCompressorWorkbenchAudioProcessor::parameterChanged(const juce::Stri
     else if (parameterID == "peak_release") compressor.setPeakRelease(newValue);
     else if (parameterID == "peak_makeup") compressor.setPeakMakeup(newValue);
 
+    // RMS parameters
     else if (parameterID == "rms_threshold") compressor.setRMSThreshold(newValue);
     else if (parameterID == "rms_ratio") compressor.setRMSRatio(newValue);
     else if (parameterID == "rms_knee") compressor.setRMSKnee(newValue);
@@ -385,20 +381,16 @@ void PeakRMSCompressorWorkbenchAudioProcessor::parameterChanged(const juce::Stri
 
 void PeakRMSCompressorWorkbenchAudioProcessor::updateCompressionMode(bool isRMSMode)
 {
-    DBG(int(isRMSMode));
     compressor.setRMSMode(isRMSMode); // Update mode
 
-    if (isRMSMode)
-    {
+    if (isRMSMode) {
         compressor.setRMSThreshold(*parameters.getRawParameterValue("rms_threshold"));
         compressor.setRMSRatio(*parameters.getRawParameterValue("rms_ratio"));
         compressor.setRMSAttack(*parameters.getRawParameterValue("rms_attack"));
         compressor.setRMSRelease(*parameters.getRawParameterValue("rms_release"));
         compressor.setRMSKnee(*parameters.getRawParameterValue("rms_knee"));
         compressor.setRMSMakeup(*parameters.getRawParameterValue("rms_makeup"));
-    }
-    else
-    {
+    } else {
         compressor.setPeakThreshold(*parameters.getRawParameterValue("peak_threshold"));
         compressor.setPeakRatio(*parameters.getRawParameterValue("peak_ratio"));
         compressor.setPeakAttack(*parameters.getRawParameterValue("peak_attack"));
@@ -408,12 +400,13 @@ void PeakRMSCompressorWorkbenchAudioProcessor::updateCompressionMode(bool isRMSM
     }
 }
 
+// APPLYING PRESETS
+//==============================================================================
 void PeakRMSCompressorWorkbenchAudioProcessor::applyPreset(int presetId)
 {
     // Check if the given presetId exists in the PresetParameters map
     auto presetIt = PresetParameters.find(presetId);
-    if (presetIt != PresetParameters.end())
-    {
+    if (presetIt != PresetParameters.end()) {
         const auto& preset = presetIt->second; // Access the Preset struct
         const auto& parametersMap = preset.parameters; // Get the parameters map for the preset
 
@@ -421,22 +414,17 @@ void PeakRMSCompressorWorkbenchAudioProcessor::applyPreset(int presetId)
         auto setParameter = [this](const juce::String& paramID, float value) {
             if (auto* parameter = parameters.getParameter(paramID)) {
                 parameter->setValueNotifyingHost(parameters.getParameterRange(paramID).convertTo0to1(value));
-            }
-            else {
+            } else {
                 DBG("Parameter not found: " + paramID);
             }
-            };
+        };
 
         // Iterate over the parameters map and apply each parameter
-        for (const auto& param : parametersMap)
-        {
+        for (const auto& param : parametersMap) {
             setParameter(param.first, param.second);
         }
-
         DBG("Preset '" + juce::String(preset.name) + "' (ID: " + juce::String(presetId) + ") applied successfully.");
-    }
-    else
-    {
+    } else {
         DBG("Error: Preset ID " + juce::String(presetId) + " does not exist.");
     }
 }
@@ -446,136 +434,104 @@ void PeakRMSCompressorWorkbenchAudioProcessor::applyPreset(int presetId)
 void PeakRMSCompressorWorkbenchAudioProcessor::extractMetrics() {
     
     isProcessing = true;
-
+    
+    // the file is loaded separately in PluginEditor
     try {
         if (!fileExists) {
-            DBG("No valid file selected. Aborting.");
             isProcessing = false;
             return;
         }
 
         progress = 0.0;
 
-        saveFileToFullBuffer();
+        // Save entire audio signal to a single buffer
+        saveFileToBuffer();
 
-        progress = 0.2;
+        progress = 0.1;
 
-        compressFullBuffer();
+        // Process the audio signal with peak and rms compression
+        compressEntireSignal();
 
-        progress = 0.7;
+        progress = 0.5;
 
-        // Extract metrics
-        metrics.setUncompressedSignal(&fullAudioBuffer);
-        metrics.setPeakGainReductionSignal(&peakGainReductionSignal);
-        metrics.setPeakCompressedSignal(&peakCompressedOutputAudio);
-        metrics.setRMSGainReductionSignal(&rmsGainReductionSignal);
-        metrics.setRMSCompressedSignal(&rmsCompressedOutputAudio);
-        metrics.calculateMetrics(getParameterValue("peak_ratio"), getParameterValue("rms_ratio"));
+        if (saveFiles) {
+            // Save compressed audio signals in .wav
+            saveCompressedAudio();
+        }
+
+        progress = 0.6;
+
+        // Set analyzed signals and compute corresponding metrics
+        extractMetricsFromSignals();
 
         progress = 0.9;
 
-        saveOutputs();
+        // Save metrics data in .txt
+        saveMetrics();
 
         progress = 1;
 
-        DBG("Metrics extraction completed.");
-    }
-    catch (std::exception& e) {
+    } catch (std::exception& e) {
         DBG("Metrics extraction failed: " + juce::String(e.what()));
-    }
-    catch (...) {
+    } catch (...) {
         DBG("Unknown error during metrics extraction.");
     }
 
     isProcessing = false;
-    progress = 0.0;
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::loadFile()
+// FUNCTIONS FOR FACILIATING extractMetrics() FUNCTIONALITY
+//==============================================================================
+void PeakRMSCompressorWorkbenchAudioProcessor::saveFileToBuffer()
 {
-    // Open file chooser to select an audio file
-    juce::FileChooser myChooser("Please select the audio track you want to compress and extract metrics from...",
-        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
-        "*.mp3, *.wav");
-
-    if (myChooser.browseForFileToOpen())
-    {
-        selectedFile = myChooser.getResult();
-        if (selectedFile.existsAsFile())
-        {
-            DBG("File selected: " + selectedFile.getFullPathName());
-            fileExists = true; // Update flag if file exists
-        }
-        else
-        {
-            DBG("Selected file does not exist.");
-            fileExists = false; // Set flag to false if file doesn't exist
-        }
-    }
-    else
-    {
-        DBG("File selection was canceled.");
-        fileExists = false; // Set flag to false if no file was selected
-    }
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::saveFileToFullBuffer()
-{
-    fullAudioBuffer.clear(); // Clear the buffer before loading
+    uncompressedSignal.clear(); // Clear the buffer before loading
 
     // Create reader for the selected file
     std::unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(selectedFile));
 
-    if (reader != nullptr)
-    {
+    if (reader != nullptr) {
         juce::AudioBuffer<float> tempBuffer;
         tempBuffer.setSize(reader->numChannels, static_cast<int>(reader->lengthInSamples));
         reader->read(&tempBuffer, 0, static_cast<int>(reader->lengthInSamples), 0, true, true);
-        fullAudioBuffer = std::move(tempBuffer);
+        uncompressedSignal = std::move(tempBuffer);
 
         DBG("File successfully loaded: " + selectedFile.getFullPathName());
-    }
-    else
-    {
+    } else {
         DBG("Error: Unable to read the file: " + selectedFile.getFullPathName());
     }
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::compressFullBuffer()
+void PeakRMSCompressorWorkbenchAudioProcessor::compressEntireSignal()
 {
-    jassert(fullAudioBuffer.getNumSamples() > 0);
+    jassert(uncompressedSignal.getNumSamples() > 0);
 
-    const auto numSamples = fullAudioBuffer.getNumSamples();
-    const auto numChannels = fullAudioBuffer.getNumChannels();
-    
+    const auto numSamples = uncompressedSignal.getNumSamples();
+    const auto numChannels = uncompressedSignal.getNumChannels();
+        
+    peakCompressedSignal.clear();
     peakGainReductionSignal.clear();
-    peakCompressedOutputAudio.clear();
+    rmsCompressedSignal.clear();
     rmsGainReductionSignal.clear();
-    rmsCompressedOutputAudio.clear();
 
     // Limit buffer size for processing
-    const int maxSamples = 44100 * 60 * 5; // 5 minutes of audio at 44.1kHz
-    if (numSamples > maxSamples)
-    {
-        DBG("Warning: Truncating buffer to " + juce::String(maxSamples) + " samples.");
-        fullAudioBuffer.setSize(numChannels, maxSamples, true, true, true);
+    const int maxSamples = 44100 * 60 * 20; // max. 20 minutes of audio at 44.1kHz
+    if (numSamples > maxSamples) {
+        uncompressedSignal.setSize(numChannels, maxSamples, true, true, true);
     }
 
     // Ensure buffers are properly sized
-    peakGainReductionSignal.setSize(numChannels, fullAudioBuffer.getNumSamples(), false, true, true);
-    peakCompressedOutputAudio.setSize(numChannels, fullAudioBuffer.getNumSamples(), false, true, true);
-
-    rmsGainReductionSignal.setSize(numChannels, fullAudioBuffer.getNumSamples(), false, true, true);
-    rmsCompressedOutputAudio.setSize(numChannels, fullAudioBuffer.getNumSamples(), false, true, true);
+    peakCompressedSignal.setSize(numChannels, numSamples, false, true, true);
+    peakGainReductionSignal.setSize(numChannels, numSamples, false, true, true);
+    rmsCompressedSignal.setSize(numChannels, numSamples, false, true, true);
+    rmsGainReductionSignal.setSize(numChannels, numSamples, false, true, true);
 
     // Copy data to buffers
-    peakCompressedOutputAudio.makeCopyOf(fullAudioBuffer);
-    rmsCompressedOutputAudio.makeCopyOf(fullAudioBuffer);
+    peakCompressedSignal.makeCopyOf(uncompressedSignal);
+    rmsCompressedSignal.makeCopyOf(uncompressedSignal);
 
     // Process the buffers in chunks to reduce memory usage
-    processBufferInChunks(peakGainReductionSignal, peakCompressedOutputAudio, 1024, false); // Chunk size of 1024 samples
-    processBufferInChunks(rmsGainReductionSignal, rmsCompressedOutputAudio, 1024, true);
-
+    processBufferInChunks(peakGainReductionSignal, peakCompressedSignal, 1024, false); // Chunk size of 1024 samples
+    processBufferInChunks(rmsGainReductionSignal, rmsCompressedSignal, 1024, true);
 }
 
 void PeakRMSCompressorWorkbenchAudioProcessor::processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS)
@@ -583,172 +539,150 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBufferInChunks(juce::Audio
     const int numSamples = buffer.getNumSamples();
     const int numChannels = buffer.getNumChannels();
 
-    compressor.ResizeSignals(chunkSize);
+    compressor.resizeSignals(chunkSize);
 
-    for (int startSample = 0; startSample < numSamples; startSample += chunkSize)
-    {
+    for (int startSample = 0; startSample < numSamples; startSample += chunkSize) {
         const int numSamplesToProcess = std::min(chunkSize, numSamples - startSample);
 
         // Skip empty chunks
-        if (numSamplesToProcess <= 0)
-        {
+        if (numSamplesToProcess <= 0) {
             continue;
         }
 
         juce::AudioBuffer<float> chunkBuffer;
         chunkBuffer.setSize(numChannels, numSamplesToProcess, false, true, true);
 
-        for (int channel = 0; channel < numChannels; ++channel)
-        {
+        for (int channel = 0; channel < numChannels; ++channel) {
             chunkBuffer.copyFrom(channel, 0, buffer, channel, startSample, numSamplesToProcess);
         }
 
-        // Apply processing to the chunk
-        if (isRMS)
-        {
+        // Apply either peak or rms compression to the chunk
+        if (isRMS) {
             compressor.applyRMSCompression(chunkBuffer, numSamplesToProcess, numChannels, true);
-            
-            // Save raw gain reduction signal 
-            for (int channel = 0; channel < numChannels; ++channel)
-            {
+            // Save rms gain reduction signal 
+            for (int channel = 0; channel < numChannels; ++channel) {
                 grBuffer.copyFrom(channel, startSample, compressor.getRMSGainReductionSignal(), channel, 0, numSamplesToProcess);
             }
-        }
-
-        else 
-        {
+        } else {
             compressor.applyPeakCompression(chunkBuffer, numSamplesToProcess, numChannels, true);
-
-            for (int channel = 0; channel < numChannels; ++channel)
-            {
+            // Save peak gain reduction signal
+            for (int channel = 0; channel < numChannels; ++channel) {
                 grBuffer.copyFrom(channel, startSample, compressor.getPeakGainReductionSignal(), channel, 0, numSamplesToProcess);
             }
         }
 
         // Copy processed chunk back into the main buffer
-        for (int channel = 0; channel < numChannels; ++channel)
-        {
+        for (int channel = 0; channel < numChannels; ++channel) {
             buffer.copyFrom(channel, startSample, chunkBuffer, channel, 0, numSamplesToProcess);
         }
     }
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::saveOutputs()
+void PeakRMSCompressorWorkbenchAudioProcessor::extractMetricsFromSignals()
 {
-    juce::File outputDirectory = Constants::OutputPath::outputPath;
+    metrics.setUncompressedSignal(&uncompressedSignal);
+    metrics.setPeakGainReductionSignal(&peakGainReductionSignal);
+    metrics.setPeakCompressedSignal(&peakCompressedSignal);
+    metrics.setRMSGainReductionSignal(&rmsGainReductionSignal);
+    metrics.setRMSCompressedSignal(&rmsCompressedSignal);
 
-    if (!outputDirectory.exists() && !outputDirectory.createDirectory())
-    {
-        DBG("Failed to create output directory: " + outputDirectory.getFullPathName());
-        return;
-    }
+    metrics.extractMetrics(getParameterValue("peak_ratio"), getParameterValue("rms_ratio"));
+}
 
-    // Define output files
-    juce::File peakOutputFile = outputDirectory.getChildFile("PeakCompressed.wav");
-    juce::File rmsOutputFile = outputDirectory.getChildFile("RMSCompressed.wav");
-    juce::File metricsOutputFile = outputDirectory.getChildFile("Metrics.txt");
+void PeakRMSCompressorWorkbenchAudioProcessor::saveCompressedAudio()
+{
+    // Define output file for compressed signals
+    juce::File peakOutputFile = createUniqueFile("Peak_compressed", ".wav");
+    juce::File rmsOutputFile = createUniqueFile("RMS_compressed", ".wav");
+
+    SaveCompressedAudioToFile(peakCompressedSignal, peakOutputFile);
+    SaveCompressedAudioToFile(rmsCompressedSignal, rmsOutputFile);
+}
+
+void PeakRMSCompressorWorkbenchAudioProcessor::saveMetrics()
+{
+    // Define output file for metric
+    juce::File metricsOutputFile = createUniqueFile("Metrics", ".txt");
     
+    // Get metrics for all signals
+    const auto& uncompressed = metrics.getUncompressedMetrics();
     const auto& peak = metrics.getPeakMetrics();
     const auto& rms = metrics.getRMSMetrics();
 
     // Create the metrics content
     juce::String metricsContent;
     metricsContent << "Metrics Summary for: " << selectedFile.getFileName() << "\n\n";
-
-    // Peak Metrics
-    metricsContent << "Peak Metrics:\n";
-    metricsContent << "-------------------\n";
-    metricsContent << "Peak RMSE: " << peak.rmse << "\n";
-    metricsContent << "Peak Correlation: " << peak.correlation << "\n";
-    metricsContent << "Peak Crest Factor: " << peak.crest << "\n";
-    metricsContent << "Peak Average Gain Reduction: " << peak.avgGR << "\n";
-    metricsContent << "Peak Maximum Gain Reduction: " << peak.maxGR << "\n";
-    metricsContent << "Peak LRA: " << peak.LRA << "\n";
-    metricsContent << "Peak Gain Reduction Standard Deviation: " << peak.stdDevGR << "\n";
-    metricsContent << "Peak Compression Activity Ratio: " << peak.compressionActivity << "\n";
-    metricsContent << "Peak Gain Reduction Crest Factor: " << peak.crestGR << "\n";
-    metricsContent << "Peak Dynamic Range Reduction: " << peak.dynamicRangeReduction << "\n";
-    metricsContent << "Peak Transient Impact: " << peak.transientImpact << "\n";
-    metricsContent << "Peak Gain Reduction Rate of Change: " << peak.rateOfChangeGR << "\n";
-    metricsContent << "Peak Gain Reduction Energy: " << peak.gainReductionEnergy << "\n";
-    metricsContent << "Peak Ratio Efficiency: " << peak.ratioEfficiency << "\n\n";
-    metricsContent << "Peak Harmonic Distortion: " << peak.harmonicDistortion << "\n";
-
-    // RMS Metrics
-    metricsContent << "RMS Metrics:\n";
-    metricsContent << "-------------------\n";
-    metricsContent << "RMS RMSE: " << rms.rmse << "\n";
-    metricsContent << "RMS Correlation: " << rms.correlation << "\n";
-    metricsContent << "RMS Crest Factor: " << rms.crest << "\n";
-    metricsContent << "RMS Average Gain Reduction: " << rms.avgGR << "\n";
-    metricsContent << "RMS Maximum Gain Reduction: " << rms.maxGR << "\n";
-    metricsContent << "RMS LRA: " << rms.LRA << "\n";
-    metricsContent << "RMS Gain Reduction Standard Deviation: " << rms.stdDevGR << "\n";
-    metricsContent << "RMS Compression Activity Ratio: " << rms.compressionActivity << "\n";
-    metricsContent << "RMS Gain Reduction Crest Factor: " << rms.crestGR << "\n";
-    metricsContent << "RMS Dynamic Range Reduction: " << rms.dynamicRangeReduction << "\n";
-    metricsContent << "RMS Transient Impact: " << rms.transientImpact << "\n";
-    metricsContent << "RMS Gain Reduction Rate of Change: " << rms.rateOfChangeGR << "\n";
-    metricsContent << "RMS Gain Reduction Energy: " << rms.gainReductionEnergy << "\n";
-    metricsContent << "RMS Ratio Efficiency: " << rms.ratioEfficiency << "\n\n";
-    metricsContent << "RMS Harmonic Distortion: " << rms.harmonicDistortion << "\n";
-
-
-
-    // Save everything
-    saveAudioBufferToFile(peakCompressedOutputAudio, peakOutputFile, compressor.getSampleRate());
-    saveAudioBufferToFile(rmsCompressedOutputAudio, rmsOutputFile, compressor.getSampleRate());
-    saveMetricsToFile(metricsContent, metricsOutputFile.getFullPathName());
+    metricsContent << uncompressed.formatMetrics();
+    metricsContent << peak.formatMetrics();
+    metricsContent << rms.formatMetrics();
+    
+    saveMetricsToFile(metricsContent, metricsOutputFile);
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::saveAudioBufferToFile(const juce::AudioBuffer<float>& buffer, const juce::File& outputFile, double sampleRate)
+// ADITIONAL FUNCTIONS (FILE LOADING AND SAVING ON USER'S SYSTEM)
+//==============================================================================
+void PeakRMSCompressorWorkbenchAudioProcessor::loadFile()
+{
+    // Open file chooser to select an audio file
+    juce::FileChooser myChooser("Please select the audio track you want to compress and extract metrics from...",
+        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
+        "*.mp3, *.wav");
+
+    if (myChooser.browseForFileToOpen()) {
+        selectedFile = myChooser.getResult();
+        if (selectedFile.existsAsFile()) {
+            DBG("File selected: " + selectedFile.getFullPathName());
+            fileExists = true;
+        }
+        else {
+            DBG("Selected file does not exist.");
+            fileExists = false;
+        }
+    } else {
+        DBG("File selection was canceled.");
+        fileExists = false;
+    }
+}
+
+void PeakRMSCompressorWorkbenchAudioProcessor::SaveCompressedAudioToFile(const juce::AudioBuffer<float>& buffer, const juce::File& compressedAudioFile)
 {
     juce::WavAudioFormat format;
     std::unique_ptr<AudioFormatWriter> writer;
 
-    if (outputFile.exists())
-    {
-        if (!outputFile.deleteFile())
-        {
-            DBG("Failed to delete existing file: " + outputFile.getFullPathName());
+    if (compressedAudioFile.exists()) {
+        if (!compressedAudioFile.deleteFile()) {
+            DBG("Failed to delete existing file: " + compressedAudioFile.getFullPathName());
             return;
-        }
-        else
-        {
-            DBG("Existing file deleted: " + outputFile.getFullPathName());
+        } else {
+            DBG("Existing file deleted: " + compressedAudioFile.getFullPathName());
         }
     }
 
-    writer.reset(format.createWriterFor(new FileOutputStream(outputFile),
+    writer.reset(format.createWriterFor(new FileOutputStream(compressedAudioFile),
         44100,
         buffer.getNumChannels(),
         24,
         {},
         0));
 
-    if (writer != nullptr)
+    if (writer != nullptr) {
         writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
+    }
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::saveMetricsToFile(const juce::String& metricsContent, const juce::String& destinationPath)
+void PeakRMSCompressorWorkbenchAudioProcessor::saveMetricsToFile(const juce::String& metricsContent, const juce::File& metricsFile)
 {
-    juce::File metricsFile(destinationPath);
-
     // Ensure the parent directory exists
-    if (!metricsFile.getParentDirectory().exists())
-    {
-        if (!metricsFile.getParentDirectory().createDirectory())
-        {
+    if (!metricsFile.getParentDirectory().exists()) {
+        if (!metricsFile.getParentDirectory().createDirectory()) {
             DBG("Failed to create directory for saving metrics: " + metricsFile.getParentDirectory().getFullPathName());
             return;
         }
     }
 
     // Delete the existing file if it exists
-    if (metricsFile.existsAsFile())
-    {
-        if (!metricsFile.deleteFile())
-        {
+    if (metricsFile.existsAsFile()) {
+        if (!metricsFile.deleteFile()) {
             DBG("Failed to delete existing metrics file: " + metricsFile.getFullPathName());
             return;
         }
@@ -756,20 +690,67 @@ void PeakRMSCompressorWorkbenchAudioProcessor::saveMetricsToFile(const juce::Str
 
     // Create and write to the file
     std::unique_ptr<juce::FileOutputStream> stream(metricsFile.createOutputStream());
-    if (stream != nullptr)
-    {
+    if (stream != nullptr) {
         *stream << metricsContent;
         stream->flush();
         DBG("Metrics saved to: " + metricsFile.getFullPathName());
-    }
-    else
-    {
+    } else {
         DBG("Failed to save metrics to: " + metricsFile.getFullPathName());
     }
 }
 
+// MISC. FUNCTIONS
 //==============================================================================
+juce::File PeakRMSCompressorWorkbenchAudioProcessor::createUniqueFile(const juce::String& fileName, const juce::String& extension)
+{
+    juce::File baseFile = outputDirectory.getChildFile(selectedFile.getFileNameWithoutExtension() 
+                                                       + "_" + fileName + extension);
+    juce::File uniqueFile = baseFile;
+    int counter = 2;
 
+    // Check if the file already exists
+    while (uniqueFile.existsAsFile()) {
+        // Generate a new file name with a number appended
+        juce::String newName = uniqueFile.getFileNameWithoutExtension()
+            + "_" + fileName + "_" + juce::String(counter) + extension;
+        uniqueFile = uniqueFile.getParentDirectory().getChildFile(newName);
+        ++counter;
+    }
+    return uniqueFile;
+}
+
+void PeakRMSCompressorWorkbenchAudioProcessor::createFolderForSaving()
+{
+    juce::File testingFolder = outputDirectory.getChildFile("Testing");
+
+    if (!testingFolder.exists())
+    {
+        if (!testingFolder.createDirectory())
+        {
+            DBG("Failed to create Testing folder.");
+            return;
+        }
+        outputDirectory = testingFolder;
+    }
+}
+
+void PeakRMSCompressorWorkbenchAudioProcessor::printBufferValues(const juce::AudioBuffer<float>& buffer, const juce::String& label) const
+{
+    DBG("Printing values for: " + label);
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    {
+        DBG("Channel: " + juce::String(channel));
+        const float* channelData = buffer.getReadPointer(channel);
+
+        for (int i = 90000; i < std::min(90100, buffer.getNumSamples()); ++i)
+        {
+            DBG("Sample[" + juce::String(i) + "]: " + juce::String(channelData[i]));
+        }
+    }
+    DBG("Finished printing values for: " + label);
+}
+
+//==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {

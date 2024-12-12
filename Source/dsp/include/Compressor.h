@@ -10,11 +10,11 @@
  *
  * The following sections integrate techniques and concepts derived from the
  * CTAGDRC project:
- * - Audio buffer management for compression.
+ * - Audio buffer management for compression (sidechain signal).
  * - Gain reduction and sidechain handling with detectors and gain computers.
  *
- * NOTE: This implementation directly reuses parts of the original CTAGDRC code without modification.
- * 
+ * NOTE: This implementation reuses parts of the original CTAGDRC code.
+ *
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.
  *
@@ -109,14 +109,16 @@ public:
     */
     void applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, bool trackGR);
 
-    void ResizeSignals(int numSamples);
-    void ResetSizeSignals();
+    void resizeSignals(int numSamples);
 
 private:
     //==============================================================================
-    void prepareCompression(juce::AudioBuffer<float>& buffer, int numSamples);
-    void finishCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, float makeup);
-    inline void applyInputGain(juce::AudioBuffer<float>&, int);
+    void setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSamples);
+    void applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, float makeup);
+    void applyInputGain(juce::AudioBuffer<float>&, int);
+    
+    void saveGainReductionSignal(juce::AudioBuffer<float>& gainReductionSignal, int numSamples, int numChannels);
+    void resetSizeSignals();
 
     //Directly initialize process spec to avoid debugging problems
     juce::dsp::ProcessSpec procSpec{ -1, 0, 0 };

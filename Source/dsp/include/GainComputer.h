@@ -13,7 +13,7 @@
  * - Soft-knee computations for smoother compression.
  * - Applying gain reduction to audio buffers for real-time processing.
  *
- * NOTE: This implementation directly reuses the original CTAGDRC code for gain computer without modification.
+ * NOTE: This implementation directly reuses the original CTAGDRC code for gain computer.
  *
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.

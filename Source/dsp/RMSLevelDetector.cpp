@@ -8,7 +8,7 @@
  *  - Attack and release times adjustments controlling the degree of smoothing
  * - Applying RMS-based detector smoothing to audio samples.
  *
- * NOTE: This implementation directly reuses parts of the original CTAGDRC code without modification.
+ * NOTE: This implementation directly reuses parts of the original CTAGDRC code.
  * 
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.
@@ -99,7 +99,8 @@ void RMSLevelDetector::applyRMSDetector(float* src, int numSamples)
 {
     // Apply smoothing to src buffer
     for (int i = 0; i < numSamples; ++i) {
-        src[i] = std::sqrt(processRMSBranched(src[i]));
-        src[i] *= std::sqrtf(2.0f); // Normalize RMS to approximate peak behavior
+        src[i] = std::sqrtf(processRMSBranched(src[i]));
+        // Adjust RMS values to make up for time constants scaling
+        src[i] *= (1 / std::sqrtf(2.0f)); 
     }
 }

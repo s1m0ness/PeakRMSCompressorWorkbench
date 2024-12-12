@@ -8,7 +8,7 @@
  * - Attack and release times adjustments controlling the degree of smoothing
  * - Applying peak-based detector smoothing to audio samples.
  *
- * NOTE: This implementation directly reuses parts of the original CTAGDRC code without modification.
+ * NOTE: This implementation directly reuses parts of the original CTAGDRC code.
  * 
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.

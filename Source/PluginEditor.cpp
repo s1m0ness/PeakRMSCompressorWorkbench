@@ -41,6 +41,9 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
     progressBar(p.progress)
 
 {
+    // BUTTONS AND SLIDERS
+    //==============================================================================
+
     // Add and make visible sliders and labels
     addAndMakeVisible(peakThresholdSlider);
     addAndMakeVisible(peakThresholdLabel);
@@ -90,7 +93,7 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
     addAndMakeVisible(rmsMakeupLabel);
     rmsMakeupLabel.setText("RMS Makeup", juce::dontSendNotification);
 
-    // Add and make visible buttons, add onClick listeners
+    // Add and make visible buttons and configure onClick()
     addAndMakeVisible(powerButton);
     powerButton.setButtonText("Power");
     powerButton.onClick = [this]() { updateParameterState(); };
@@ -102,114 +105,27 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
     rmsSwitchButton.setButtonText("Switch to RMS");
     rmsSwitchButton.onClick = [this]() { updateParameterState(); };
     
-    // Add progress bar for tracking the metrics extraction
+    // Add progress bar for tracking the metrics extraction process
     addAndMakeVisible(progressBar);
     progressBar.setColour(juce::ProgressBar::backgroundColourId, juce::Colours::darkgrey); // Background color
     progressBar.setColour(juce::ProgressBar::foregroundColourId, juce::Colours::green);   // Foreground color
-    progressBar.setVisible(false); // hide at first
+    progressBar.setVisible(false);
 
     // EXTRACT METRICS AND PRESETS
+    //==============================================================================
 
     // Add extract metrics button and configure onClick() for extracting metrics
     addAndMakeVisible(extractMetricsButton);
     extractMetricsButton.setButtonText("Extract Metrics");
-    extractMetricsButton.onClick = [this]() {
-        if (audioProcessor.isProcessing) {
-            DBG("Extraction already in progress...");
-            juce::AlertWindow::showMessageBoxAsync(
-                juce::AlertWindow::WarningIcon,
-                "Processing",
-                "Metrics extraction is already in progress.");
-            return;
-        }
-
-        muteButton.setToggleState(true, juce::dontSendNotification);
-        audioProcessor.isMuted = true;
-
-        // Call loadFile directly on the main thread
-        audioProcessor.loadFile();
-        if (!audioProcessor.fileExists) {
-            juce::AlertWindow::showMessageBoxAsync(
-                juce::AlertWindow::WarningIcon,
-                "Error",
-                "No valid file selected. Please try again.");
-            
-            muteButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.isMuted = false;
-            return; // Do not proceed further if file loading failed
-        }
-
-        // Lock the UI to indicate loading
-        juce::MessageManager::callAsync([this]() {
-            powerButton.setToggleState(false, juce::dontSendNotification);
-            powerButton.setEnabled(false);
-            updateParameterState();
-            audioProcessor.compressor.setPower(true);
-            progressBar.setVisible(true);
-            });
-
-        // Start metrics extraction in a background thread
-        audioProcessor.processingThread = std::thread([this]() {
-            try {
-                audioProcessor.extractMetrics();
-            }
-            catch (...) {
-                DBG("Exception during extraction.");
-            }
-
-            // Unlock the UI after completion
-            juce::MessageManager::callAsync([this]() {
-                powerButton.setToggleState(true, juce::dontSendNotification);
-                powerButton.setEnabled(true);
-                muteButton.setToggleState(false, juce::dontSendNotification);
-                audioProcessor.isMuted = false;
-                updateParameterState();
-                audioProcessor.compressor.setPower(false);
-                progressBar.setVisible(false);
-
-                // Add the success popup window here
-                juce::AlertWindow::showMessageBoxAsync(
-                    juce::AlertWindow::InfoIcon,
-                    "Success",
-                    "Metrics have been successfully extracted and saved to: " +
-                    juce::String(Constants::OutputPath::outputPath));
-                });
-            });
-
-        // Check if thread is valid before detaching
-        if (audioProcessor.processingThread.joinable()) {
-            audioProcessor.processingThread.detach();
-        }
-        };
+    extractMetricsButton.onClick = [this]() { handleExtractMetrics(); };
 
     // Add preset combo box and configure onClick() for applying parameters
     addAndMakeVisible(presetComboBox);
     populatePresetComboBox();
-    presetComboBox.onChange = [this]() {
-        int selectedPresetId = presetComboBox.getSelectedId();
+    presetComboBox.onChange = [this]() { handlePresetChange(); };
 
-        if (selectedPresetId > 0) {
-            audioProcessor.applyPreset(selectedPresetId);
-
-            // Update the sliders using getter methods
-            juce::MessageManager::callAsync([this]() {
-                peakThresholdSlider.setValue(audioProcessor.getParameterValue("peak_threshold"));
-                peakRatioSlider.setValue(audioProcessor.getParameterValue("peak_ratio"));
-                peakAttackSlider.setValue(audioProcessor.getParameterValue("peak_attack"));
-                peakReleaseSlider.setValue(audioProcessor.getParameterValue("peak_release"));
-                peakKneeSlider.setValue(audioProcessor.getParameterValue("peak_knee"));
-                peakMakeupSlider.setValue(audioProcessor.getParameterValue("peak_makeup"));
-                rmsThresholdSlider.setValue(audioProcessor.getParameterValue("rms_threshold"));
-                rmsRatioSlider.setValue(audioProcessor.getParameterValue("rms_ratio"));
-                rmsAttackSlider.setValue(audioProcessor.getParameterValue("rms_attack"));
-                rmsReleaseSlider.setValue(audioProcessor.getParameterValue("rms_release"));
-                rmsKneeSlider.setValue(audioProcessor.getParameterValue("rms_knee"));
-                rmsMakeupSlider.setValue(audioProcessor.getParameterValue("rms_makeup"));
-                });
-
-            DBG("Preset applied and sliders updated.");
-        }
-    };
+    // BUTTONS AND SLIDERS ATTACHMENTS
+    //==============================================================================
 
     // Buttons attachment
     powerButtonAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -247,6 +163,7 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
     rmsMakeupAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         valueTreeState, "rms_makeup", rmsMakeupSlider);
     
+    //==============================================================================
     setSize (500, 1200);
     updateParameterState();
     startTimerHz(60);
@@ -262,6 +179,8 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::paint (juce::Graphics& g)
     g.fillAll(juce::Colours::darkgrey); // Background color
 }
 
+// SET BOUNDS FOR GUI ELEMENTS
+//==============================================================================
 void PeakRMSCompressorWorkbenchAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds().reduced(10);
@@ -346,6 +265,9 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::resized()
     meterBox.performLayout(area.toFloat());
 }
 
+// ADDITIONAL FUNCTIONS
+//==============================================================================
+
 void PeakRMSCompressorWorkbenchAudioProcessorEditor::timerCallback()
 {
     int m = meter.getMode();
@@ -363,14 +285,12 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::timerCallback()
     default:
         break;
     }
-
     progressBar.repaint();
 }
 
 void PeakRMSCompressorWorkbenchAudioProcessorEditor::updateParameterState()
 {
-    if (powerButton.getToggleState()) 
-    {
+    if (powerButton.getToggleState()) {
         meter.setEnabled(true);
         meter.setGUIEnabled(true);
 
@@ -396,9 +316,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::updateParameterState()
 
         // Immediately update the compression mode
         audioProcessor.updateCompressionMode(isRMSMode);
-    }
-    else
-    {
+    } else {
         meter.setEnabled(false);
         meter.setGUIEnabled(false);
 
@@ -426,10 +344,98 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::populatePresetComboBox()
 {
     presetComboBox.clear(); // Clear existing items
 
-    for (const auto& [presetId, preset] : PresetParameters)
-    {
+    for (const auto& [presetId, preset] : PresetParameters) {
         presetComboBox.addItem(preset.name, presetId); // Use name and id
     }
-
     presetComboBox.setSelectedId(0, juce::dontSendNotification); // Default to "None"
+}
+
+void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
+    if (audioProcessor.isProcessing) {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "Processing",
+            "Metrics extraction is already in progress.");
+        return;
+    }
+
+    muteButton.setToggleState(true, juce::dontSendNotification);
+    audioProcessor.isMuted = true;
+
+    // Call loadFile directly on the main thread
+    audioProcessor.loadFile();
+    if (!audioProcessor.fileExists) {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::AlertWindow::WarningIcon,
+            "Error",
+            "No valid file selected. Please try again.");
+
+        muteButton.setToggleState(false, juce::dontSendNotification);
+        audioProcessor.isMuted = false;
+        return;
+    }
+
+    // Lock the UI to indicate loading
+    juce::MessageManager::callAsync([this]() {
+        powerButton.setToggleState(false, juce::dontSendNotification);
+        powerButton.setEnabled(false);
+        updateParameterState();
+        audioProcessor.compressor.setPower(true);
+        progressBar.setVisible(true);
+        });
+
+    // Start metrics extraction in a background thread
+    audioProcessor.processingThread = std::thread([this]() {
+        try {
+            audioProcessor.extractMetrics();
+        }
+        catch (...) {
+            DBG("Exception during extraction.");
+        }
+
+        // Unlock the UI after completion
+        juce::MessageManager::callAsync([this]() {
+            powerButton.setToggleState(true, juce::dontSendNotification);
+            powerButton.setEnabled(true);
+            muteButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.isMuted = false;
+            updateParameterState();
+            audioProcessor.compressor.setPower(false);
+            progressBar.setVisible(false);
+
+            // Add the success popup window here
+            juce::AlertWindow::showMessageBoxAsync(
+                juce::AlertWindow::InfoIcon,
+                "Success",
+                "Metrics have been successfully extracted");
+            });
+        });
+
+    // Check if thread is valid before detaching
+    if (audioProcessor.processingThread.joinable()) {
+        audioProcessor.processingThread.detach();
+    }
+}
+
+void PeakRMSCompressorWorkbenchAudioProcessorEditor::handlePresetChange() {
+    int selectedPresetId = presetComboBox.getSelectedId();
+
+    if (selectedPresetId > 0) {
+        audioProcessor.applyPreset(selectedPresetId);
+
+        juce::MessageManager::callAsync([this]() {
+            peakThresholdSlider.setValue(audioProcessor.getParameterValue("peak_threshold"));
+            peakRatioSlider.setValue(audioProcessor.getParameterValue("peak_ratio"));
+            peakAttackSlider.setValue(audioProcessor.getParameterValue("peak_attack"));
+            peakReleaseSlider.setValue(audioProcessor.getParameterValue("peak_release"));
+            peakKneeSlider.setValue(audioProcessor.getParameterValue("peak_knee"));
+            peakMakeupSlider.setValue(audioProcessor.getParameterValue("peak_makeup"));
+            rmsThresholdSlider.setValue(audioProcessor.getParameterValue("rms_threshold"));
+            rmsRatioSlider.setValue(audioProcessor.getParameterValue("rms_ratio"));
+            rmsAttackSlider.setValue(audioProcessor.getParameterValue("rms_attack"));
+            rmsReleaseSlider.setValue(audioProcessor.getParameterValue("rms_release"));
+            rmsKneeSlider.setValue(audioProcessor.getParameterValue("rms_knee"));
+            rmsMakeupSlider.setValue(audioProcessor.getParameterValue("rms_makeup"));
+            });
+    }
 }

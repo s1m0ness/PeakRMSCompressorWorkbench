@@ -9,7 +9,7 @@
  * - Updates the peak value based on audio input samples.
  * - Returns the current peak level.
  *
- * NOTE: This implementation directly reuses CTAGDRC code for peak level envlope follower without modification.
+ * NOTE: This implementation directly reuses CTAGDRC code for peak level envelope follower.
  *
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.

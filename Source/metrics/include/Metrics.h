@@ -27,6 +27,7 @@
 
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <cmath>
+#include <string>
 
 // Metrics class to calculate and store compression metrics
 class Metrics
@@ -39,31 +40,55 @@ public:
     //==============================================================================
     struct CompressionMetrics
     {
-        float rmse = 0.0f;
+        /*float rmse = 0.0f;
         float correlation = 0.0f;
-        float crest = 0.0f;
-        float avgGR = 0.0f;
-        float maxGR = 0.0f;
         float LRA = 0.0f;
         float stdDevGR = 0.0f;
         float compressionActivity = 0.0f;
         float crestGR = 0.0f;
-        float dynamicRangeReduction = 0.0f;
         float transientImpact = 0.0f;
         float rateOfChangeGR = 0.0f;
         float gainReductionEnergy = 0.0f;
-        float harmonicDistortion = 0.0f;
         float ratioEfficiency = 0.0f;
+        float attackReleaeTime = 0.0f;
+        float temporalSmoothness = 0.0f;
+        float transientEnergyPreservation = 0.0f;*/
 
-        // Reset metrics to default
-        void reset()
+        float meanSquare{ 0.0f };
+        float rms{ 0.0f };
+        float peak{ 0.0f };
+        float crestFactor{ 0.0f };
+        float lufs{ 0.0f };
+        float dynamicRangeReduction{ 0.0f };
+        float avgGR{ 0.0f };
+        float maxGR{ 0.0f };
+        
+        char* signalName{ };
+        bool trackGR{ false };
+
+        juce::String formatMetrics() const
         {
-            rmse = 0.0f;
-            correlation = 0.0f;
+            juce::String metricsContent;
+
+            metricsContent << signalName << "\n";
+            metricsContent << "-------------------\n";
+            metricsContent << "Peak value in dB: " << juce::Decibels::gainToDecibels(peak) << "\n";
+            metricsContent << "Mean square energy in dB: " << juce::Decibels::gainToDecibels(meanSquare) << "\n";
+            metricsContent << "RMS value in dB: " << juce::Decibels::gainToDecibels(rms) << "\n";
+            metricsContent << "Crest factor in dB: " << crestFactor << "\n";
+            metricsContent << "LUFS: " << lufs << "\n";
+            
+            if (trackGR) {
+                metricsContent << "Maximum gain reduction in dB: " << maxGR << "\n";
+                metricsContent << "Average gain reduction in dB: " << avgGR << "\n";
+            }
+            metricsContent << "\n";
+            return metricsContent;
         }
     };
 
     //==============================================================================
+    const CompressionMetrics& getUncompressedMetrics() const;
     const CompressionMetrics& getPeakMetrics() const;
     const CompressionMetrics& getRMSMetrics() const;
 
@@ -71,21 +96,37 @@ public:
     void prepare(const double& fs);
 
     //==============================================================================
-    void setUncompressedSignal(const juce::AudioBuffer<float>* signal);
+    void setUncompressedSignal(juce::AudioBuffer<float>* signal);
     
-    void setPeakCompressedSignal(const juce::AudioBuffer<float>* signal);
+    void setPeakCompressedSignal(juce::AudioBuffer<float>* signal);
     
-    void setPeakGainReductionSignal(const juce::AudioBuffer<float>* signal);
+    void setPeakGainReductionSignal(juce::AudioBuffer<float>* signal);
     
-    void setRMSCompressedSignal(const juce::AudioBuffer<float>* signal);
+    void setRMSCompressedSignal(juce::AudioBuffer<float>* signal);
 
-    void setRMSGainReductionSignal(const juce::AudioBuffer<float>* signal);
+    void setRMSGainReductionSignal(juce::AudioBuffer<float>* signal);
+
 
     //==============================================================================
-    void calculateMetrics(float peakThreshold, float rmsThreshold);
+    void extractMetrics(float peakThreshold, float rmsThreshold);
 
 private:
     //==============================================================================
+    float getMeanSquareEnergy(const juce::AudioBuffer<float>& signal);
+    
+    float getPeakValue(const juce::AudioBuffer<float>& signal);
+
+    float getRMSValue(float meanSquare);
+
+    float getCrestFactor(float peakValue, float rmsValue);
+
+    float getLUFS(const juce::AudioBuffer<float>& buffer);
+
+    float getDynamicRangeReduction(bool isRMS);
+
+
+
+
 
     float getRMSE(const juce::AudioBuffer<float>* signalA, const juce::AudioBuffer<float>* signalB) const;
 
@@ -125,34 +166,45 @@ private:
 
     float getGainReductionCrestFactor(const juce::AudioBuffer<float>* gainReductionSignal);
 
-    float getDynamicRangeReduction(const juce::AudioBuffer<float>* uncompressedSignal, const juce::AudioBuffer<float>* compressedSignal);
-
     float getTransientImpact(const juce::AudioBuffer<float>* uncompressedSignal, const juce::AudioBuffer<float>* compressedSignal);
 
     float getGainReductionRateOfChange(const juce::AudioBuffer<float>* gainReductionSignal, float sampleRate);
 
     float getGainReductionEnergy(const juce::AudioBuffer<float>* gainReductionSignal);
 
-    float getSignalToGainReductionCorrelation(const juce::AudioBuffer<float>* inputSignal, const juce::AudioBuffer<float>* gainReductionSignal);
-
-    float getHarmonicDistortion(const juce::AudioBuffer<float>* inputSignal, const juce::AudioBuffer<float>* outputSignal, int fftOrder);
-
     float getRatioEfficiency(const juce::AudioBuffer<float>* inputSignal, const juce::AudioBuffer<float>* gainReductionSignal, float ratio);
 
-    //==============================================================================
-    bool validateSignals(const juce::AudioBuffer<float>* signalA, const juce::AudioBuffer<float>* signalB) const;
+    float getAttackReleaseTime(const juce::AudioBuffer<float>* gainReductionSignal, float sampleRate);
+
+    float getTemporalSmoothness(const juce::AudioBuffer<float>* gainReductionSignal);
+
+    float getTransientEnergyPreservation(const juce::AudioBuffer<float>* uncompressedSignal, const juce::AudioBuffer<float>* compressedSignal);
+
 
     //==============================================================================
-    const juce::AudioBuffer<float>* uncompressedSignal = nullptr;
-    const juce::AudioBuffer<float>* peakCompressedSignal = nullptr;
-    const juce::AudioBuffer<float>* rmsCompressedSignal = nullptr;
+    bool validateSignal(const juce::AudioBuffer<float>& signal) const;
 
-    const juce::AudioBuffer<float>* rmsGainReductionSignal = nullptr;
-    const juce::AudioBuffer<float>* peakGainReductionSignal = nullptr;
+    void downsampleBuffer(juce::AudioBuffer<float>* buffer);
+
+    //==============================================================================
+    void applyKWeighting(juce::AudioBuffer<float>& buffer);
+
+    float getIntegratedLoudness(float meanSquare);
+
+
+    
+    // All signals values are in linear gain
+    //==============================================================================
+    juce::AudioBuffer<float>* uncompressedSignal = nullptr;
+    juce::AudioBuffer<float>* peakCompressedSignal = nullptr;
+    juce::AudioBuffer<float>* rmsCompressedSignal = nullptr;
+    juce::AudioBuffer<float>* rmsGainReductionSignal = nullptr;
+    juce::AudioBuffer<float>* peakGainReductionSignal = nullptr;
     
     double sampleRate{ 0.0f };
+    int downSamplingFactor{ 10 };
 
-
+    CompressionMetrics uncompressedMetrics;
     CompressionMetrics peakMetrics;
     CompressionMetrics rmsMetrics;
 };

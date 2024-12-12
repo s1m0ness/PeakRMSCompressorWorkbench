@@ -36,6 +36,7 @@
 #include "PluginProcessor.h"
 #include "gui/include/Meter.h"
 #include <../Source/util/include/Constants.h>
+#include <../Source/util/include/Config.h>
 
 //==============================================================================
 /**
@@ -49,14 +50,15 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-    void updateParameterState();
-    void timerCallback();
-
-    void populatePresetComboBox();
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    void timerCallback();
+    void updateParameterState();
+    void populatePresetComboBox();
+    void handleExtractMetrics();
+    void handlePresetChange();
+
+
     PeakRMSCompressorWorkbenchAudioProcessor& audioProcessor;
     juce::AudioProcessorValueTreeState& valueTreeState;
 

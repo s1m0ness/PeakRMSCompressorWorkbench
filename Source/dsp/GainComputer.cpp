@@ -2,7 +2,7 @@
  * Implementation based on the CTAGDRC project:
  * https://github.com/p-hlp/CTAGDRC
  *
- * This class, GainComputer, handles gain calculation for dynamic range compression.
+ * This class handles gain calculation for dynamic range compression.
  * The logic used here is derived from the CTAGDRC project, specifically for threshold, ratio,
  * and knee-based gain reduction. All calculations are in alignment with digital audio standards
  * for smooth compression behavior, including soft-knee handling.
@@ -13,7 +13,7 @@
  * - Soft-knee computations for smoother compression.
  * - Applying gain reduction to audio buffers for real-time processing.
  *
- * NOTE: This implementation directly reuses the original CTAGDRC code for gain computer without modification.
+ * NOTE: This implementation directly reuses the original CTAGDRC code for gain computer.
  * 
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.

@@ -6,10 +6,11 @@
  * - Handles audio processing, including compression.
  * - Implements RMS and Peak-based dynamic range compression using the JUCE DSP framework.
  * - Provides support for real-time and offline audio analysis.
- * - Saves compressed audio outputs to user-defined locations.
+ * - Saves compressed audio outputs and extracted metrics to user-defined locations.
  *
  * Additional Features:
- * - Extends the basic JUCE framework to include metrics extraction functionality, enabling dynamic analysis of audio signals.
+ * - Extends the basic JUCE framework to include metrics extraction functionality, enabling analysis
+ *   of dynamic range compression applied on audio signal, using peak-based or RMS-based level detection.
  *
  * NOTE: This implementation integrates with the JUCE AudioProcessor API and follows its standard plugin structure.
  *
@@ -37,6 +38,8 @@
 #include <../Source/dsp/include/LevelEnvelopeFollower.h>
 #include <../Source/metrics/include/Metrics.h>
 #include <../Source/util/include/Constants.h>
+#include <../Source/util/include/Config.h>
+#include <../Source/util/include/Presets.h>
 
 
 //==============================================================================
@@ -96,6 +99,8 @@ public:
     */
     void updateCompressionMode(bool);
 
+    // APPLY PRESET
+    //==============================================================================
     /**
     * Updates the compressor parameters based on the selected preset.
     *
@@ -112,20 +117,36 @@ public:
     void extractMetrics();
 
     /**
-    * Loads user selected audio file.
+    * Loads user selected audio file and stores in selectedFile.
     */
     void loadFile();
 
     /**
-    * Saves selected audio file into the fullAudioBuffer.
+    * Saves selected audio file into uncompressedSingal audio buffer.
     */
-    void saveFileToFullBuffer();
+    void saveFileToBuffer();
 
     /**
     * Compresses the full audio buffer using both Peak and RMS compression.
     * Outputs compressed audio and gain reduction signals.
     */
-    void compressFullBuffer();
+    void compressEntireSignal();
+
+    /**
+    * Sets uncompressed, peak compressed and rms compressed signals
+    * and extracts corresponding metrics.
+    */
+    void extractMetricsFromSignals();
+
+    /**
+    * Saves peak and rms compressed audio.
+    */
+    void saveCompressedAudio();
+
+    /**
+    * Saves extracted metrics.
+    */
+    void saveMetrics();
 
     /**
     * Processes the audio buffer in smaller chunks.
@@ -139,33 +160,23 @@ public:
     void processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS);
 
     /**
-     * Saves the compressed audio outputs and metrics.
-     * Writes Peak and RMS compressed audio files and metrics summary.
-     */
-    void saveOutputs();
-
-    /**
     * Saves an audio buffer to a .wav file.
     * Handles file creation, writing, and deletion of existing files.
     *
-    * @param buffer The audio buffer to save.
-    * @param outputFile File path to save the audio buffer.
-    * @param sampleRate Sample rate of the audio buffer.
+    * @param buffer Audio buffer to save.
+    * @param compressedAudioFile Output file for saving the audio buffer.
     */
-    void saveAudioBufferToFile(const juce::AudioBuffer<float>& buffer, const juce::File& outputFile, double sampleRate);
+    void SaveCompressedAudioToFile(const juce::AudioBuffer<float>& buffer, const juce::File& compressedAudioFile);
 
     /**
     * Saves metrics content to a .txt file.
     * Handles file creation, directory validation, and overwriting.
     *
     * @param metricsContent Metrics data as a formatted string.
-    * @param destinationPath Path to save the metrics file.
+    * @param metricsFile Output file for saving the metrics content.
     */
-    void saveMetricsToFile(const juce::String& metricsContent, const juce::String& destinationPath);
+    void saveMetricsToFile(const juce::String& metricsContent, const juce::File& metricsFile);
 
-    //==============================================================================
-    bool getIsBufferReady() const { return isBufferReady; }
-   
     //==============================================================================
     std::atomic<float> gainReduction;
     std::atomic<float> currentInput;
@@ -191,20 +202,28 @@ public:
         }
 
 private:
+    juce::File createUniqueFile(const juce::String& label, const juce::String& extension);
+    void createFolderForSaving();
+    void printBufferValues(const juce::AudioBuffer<float>& buffer, const juce::String& label) const;
+
     juce::AudioProcessorValueTreeState parameters;
     //==============================================================================
     LevelEnvelopeFollower inLevelFollower;
     LevelEnvelopeFollower outLevelFollower;
+    
     juce::AudioFormatManager formatManager; // Handles audio format readers
-    juce::AudioBuffer<float> fullAudioBuffer; 
+    
+    juce::File outputDirectory = Config::OutputPath::path;
+
+    // Files for metrics extraction
+    bool saveFiles = Config::saveCompressedFiles::save;
     juce::File selectedFile;
-    juce::String audioFilePath;
-    juce::AudioBuffer<float> uncompressedInputAudio, 
-                             peakCompressedOutputAudio, 
-                             rmsCompressedOutputAudio, 
+    juce::AudioBuffer<float> uncompressedSignal;  // contains the entire audio signal
+    juce::AudioBuffer<float> peakCompressedSignal, 
+                             rmsCompressedSignal, 
                              rmsGainReductionSignal,
                              peakGainReductionSignal;
-    bool isBufferReady = false;
     Metrics metrics;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PeakRMSCompressorWorkbenchAudioProcessor)
 };
