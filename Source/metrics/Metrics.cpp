@@ -688,7 +688,6 @@ float Metrics::getMeanSquareEnergy(const juce::AudioBuffer<float>& signal)
             }
         }
     }
-
     if (totalSampleCount == 0)
         return 0.0f;
 
