@@ -99,7 +99,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   - Go to **Configuration Properties > Debugging**.
   - Set the **Command** field to point to:
     ```plaintext
-    JUCE\extras\AudioPluginHost\Builds\VisualStudio2022d\Debug\App\AudioPluginHost.exe
+    JUCE\extras\AudioPluginHost\Builds\VisualStudio2022\x64\Debug\App\AudioPluginHost.exe
     ```
   - Click **Apply**.
 
