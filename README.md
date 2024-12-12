@@ -60,7 +60,8 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```
 - Navigate to the Projucer build directory:
   ```plaintext
-  JUCE\extras\Projucer\Builds\VisualStudio2022  ```
+  JUCE\extras\Projucer\Builds\VisualStudio2022
+  ```
 - Open `Projucer.sln` in Visual Studio and build it.
 
 ---
@@ -73,7 +74,8 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```
 - Navigate to the build directory:
   ```plaintext
-  AudioFilePlayerPlugin\Builds\VisualStudio2022  ```
+  AudioFilePlayerPlugin\Builds\VisualStudio2022
+  ```
 - Open `AudioFilePlayer.sln` in Visual Studio and build it.
 
 ---
@@ -82,7 +84,8 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 *(Video reference: [35:32](https://youtu.be/Mo0Oco3Vimo?si=WoisnAayUc8t_EST&t=2132))*
 - Navigate to the JUCE AudioPluginHost directory:
   ```plaintext
-  JUCE\extras\AudioPluginHost  ```
+  JUCE\extras\AudioPluginHost
+  ```
 - Open `AudioPluginHost.jucer` in Projucer and build the solution.
 
 ---
@@ -106,7 +109,8 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 *(Video reference: [37:36](https://youtu.be/Mo0Oco3Vimo?si=sD74MpbJAyOmU3MD&t=2256))*
 - Navigate to the following directory:
   ```plaintext
-  C:\Program Files\Common Files  ```
+  C:\Program Files\Common Files
+  ```
 - Right-click the `VST3` folder, select **Properties**, then go to the **Security** tab.
 - Select **Users** and allow modification permissions. Click **Apply**.
 
