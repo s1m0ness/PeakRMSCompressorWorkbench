@@ -111,7 +111,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   C:\Program Files\Common Files
   ```
-- Right-click the `VST3` folder, select **Properties**, then go to the **Security** tab.
+- Right-click the `VST3` folder (create it if doesn't exist), select **Properties**, then go to the **Security** tab.
 - Select **Users** and allow modification permissions. Click **Apply**.
 
 ---
