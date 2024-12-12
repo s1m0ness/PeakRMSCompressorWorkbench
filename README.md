@@ -30,14 +30,29 @@ To set up and run this project, ensure you have the following installed:
 
 ---
 
-#### 1. Install Visual Studio
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/s1m0ness/PeakRMSCompressorWorkbench.git
+```
+
+---
+
+#### 2. Run Setup Script
+Run the `setup.sh` script located in the repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
+```bash
+./setup.sh
+```
+
+---
+
+#### 3. Install Visual Studio
 *(Video reference: [2:13](https://youtu.be/Mo0Oco3Vimo?si=KT-B_rA4bZAtaKIj&t=1397))*
 - Download and install **[Visual Studio Community Edition](https://visualstudio.microsoft.com/)**.
 - During installation, select the **Desktop Development with C++** workload.
 
 ---
 
-#### 2. Install JUCE Framework
+#### 4. Install JUCE Framework
 *(Video reference: [27:32](https://youtu.be/Mo0Oco3Vimo?si=JDXoQBc6IURfOlis&t=1652))*
 - Clone the JUCE repository:
   ```bash
@@ -45,13 +60,12 @@ To set up and run this project, ensure you have the following installed:
   ```
 - Navigate to the Projucer build directory:
   ```plaintext
-  JUCE\extras\Projucer\Builds\VisualStudio2022\
-  ```
+  JUCE\extras\Projucer\Builds\VisualStudio2022  ```
 - Open `Projucer.sln` in Visual Studio and build it.
 
 ---
 
-#### 3. Set Up AudioFilePlayerPlugin
+#### 5. Set Up AudioFilePlayerPlugin
 *(Video reference: [42:06](https://youtu.be/Mo0Oco3Vimo?si=l5YVJTxdnHX2p-Gb&t=2526))*
 - Clone the AudioFilePlayerPlugin repository:
   ```bash
@@ -59,23 +73,21 @@ To set up and run this project, ensure you have the following installed:
   ```
 - Navigate to the build directory:
   ```plaintext
-  AudioFilePlayerPlugin\Builds\VisualStudio2022\
-  ```
+  AudioFilePlayerPlugin\Builds\VisualStudio2022  ```
 - Open `AudioFilePlayer.sln` in Visual Studio and build it.
 
 ---
 
-#### 4. Set Up AudioPluginHost
+#### 6. Set Up AudioPluginHost
 *(Video reference: [35:32](https://youtu.be/Mo0Oco3Vimo?si=WoisnAayUc8t_EST&t=2132))*
 - Navigate to the JUCE AudioPluginHost directory:
   ```plaintext
-  JUCE\extras\AudioPluginHost\
-  ```
+  JUCE\extras\AudioPluginHost  ```
 - Open `AudioPluginHost.jucer` in Projucer and build the solution.
 
 ---
 
-#### 5. Configure the PeakRMSCompressorWorkbench Project
+#### 7. Configure the PeakRMSCompressorWorkbench Project
 *(Video reference: [36:06](https://youtu.be/Mo0Oco3Vimo?si=rt7h6I_aILSQKOo4&t=2166))*
 - Navigate to your `PeakRMSCompressorWorkbench` directory.
 - Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
@@ -84,24 +96,23 @@ To set up and run this project, ensure you have the following installed:
   - Go to **Configuration Properties > Debugging**.
   - Set the **Command** field to point to:
     ```plaintext
-    JUCE\extras\AudioPluginHost\Builds\VisualStudio2022\x64\Debug\App\AudioPluginHost.exe
+    JUCE\extras\AudioPluginHost\Builds\VisualStudio2022d\Debug\App\AudioPluginHost.exe
     ```
   - Click **Apply**.
 
 ---
 
-#### 6. Modify VST3 Permissions
+#### 8. Modify VST3 Permissions
 *(Video reference: [37:36](https://youtu.be/Mo0Oco3Vimo?si=sD74MpbJAyOmU3MD&t=2256))*
 - Navigate to the following directory:
   ```plaintext
-  C:\Program Files\Common Files\
-  ```
+  C:\Program Files\Common Files  ```
 - Right-click the `VST3` folder, select **Properties**, then go to the **Security** tab.
 - Select **Users** and allow modification permissions. Click **Apply**.
 
 ---
 
-#### 7. Test the Project
+#### 9. Test the Project
 *(Video reference: [38:49](https://youtu.be/Mo0Oco3Vimo?si=4A2KMZ622XDUdusK&t=2329))*
 - Set `PeakRMSCompressorWorkbench_VST3` as the startup project in Visual Studio.
 - Build and run the project.
