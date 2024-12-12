@@ -18,7 +18,7 @@ This repository hosts **PeakRMSCompressorWorkbench**, a JUCE-based application d
 - **Default Path**: 
   `C:\Users\Public\Documents`
 
-  In this directory, the metrics files are saved under the `\Testing` folder.
+  In this directory, the metrics files are saved under the `\PeakRMSCompressorWorkbench_testing_results` folder.
 
 - **Compressed Files**:
   In `Config.h`, you can configure whether the compressed audio files should also be saved alongside the metrics. By default, this option is set to **false**.
