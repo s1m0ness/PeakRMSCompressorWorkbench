@@ -11,6 +11,20 @@ This repository hosts **PeakRMSCompressorWorkbench**, a JUCE-based application d
 - **Metrics Extraction**: LUFS, dynamic range, crest factor, and other key metrics.
 - **Real-time Playback**: Integrates with [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin) by **Matkat Music** for testing in real-time.
 
+### Output Path Configuration
+- The export metrics functionality saves the computed metrics as a `.txt` file. The default export directory is specified in the **`Config.h`** file located in:
+`Source\util\include\Config.h`
+
+- **Default Path**: 
+  `C:\Users\Public\Documents`
+
+  In this directory, the metrics files are saved under the `\Testing` folder.
+
+- **Compressed Files**:
+  In `Config.h`, you can configure whether the compressed audio files should also be saved alongside the metrics. By default, this option is set to **false**.
+
+To customize the output behavior, update the appropriate parameters in the **`Config.h`** file before running the application.
+
 ---
 
 ## Windows Setup
@@ -111,7 +125,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   C:\Program Files\Common Files
   ```
-- Right-click the `VST3` folder, select **Properties**, then go to the **Security** tab.
+- Right-click the `VST3` folder (create it if doesn't exist), select **Properties**, then go to the **Security** tab.
 - Select **Users** and allow modification permissions. Click **Apply**.
 
 ---
