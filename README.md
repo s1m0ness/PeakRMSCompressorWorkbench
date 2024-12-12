@@ -21,7 +21,7 @@ To set up and run this project, ensure you have the following installed:
 
 1. [JUCE](https://juce.com/): A C++ framework for audio application development.
 2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback.
-3. [Visual Studio Community Edition](https://visualstudio.microsoft.com/): The IDE for building the project.
+3. [Visual Studio Community Edition 2022](https://visualstudio.microsoft.com/): The IDE for building the project.
 
 ---
 
@@ -45,9 +45,9 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 
 ---
 
-#### 3. Install Visual Studio
+#### 3. Install Visual Studio 2022
 *(Video reference: [2:13](https://youtu.be/Mo0Oco3Vimo?si=KT-B_rA4bZAtaKIj&t=1397))*
-- Download and install **[Visual Studio Community Edition](https://visualstudio.microsoft.com/)**.
+- Download and install **[Visual Studio Community Edition 2022](https://visualstudio.microsoft.com/)**.
 - During installation, select the **Desktop Development with C++** workload.
 
 ---
