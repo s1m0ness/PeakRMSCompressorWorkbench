@@ -1,7 +1,7 @@
 
 # PeakRMSCompressorWorkbench
 
-This repository hosts **PeakRMSCompressorWorkbench**, a JUCE-based application designed to test and analyze audio dynamic range compression algorithms. It provides tools to measure and compare the effects of compression using peak-based and RMS-based detection methods.
+This repository hosts **PeakRMSCompressorWorkbench**, a JUCE-based application designed to test and analyze the effects of **dynamic range compression** algorithms on audio signals using using **peak-based and RMS-based level detection** methods. It provides tools to measure and compare these effects via various metrics.
 
 ---
 
