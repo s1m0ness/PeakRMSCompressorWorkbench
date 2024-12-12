@@ -730,8 +730,8 @@ void PeakRMSCompressorWorkbenchAudioProcessor::createFolderForSaving()
             DBG("Failed to create Testing folder.");
             return;
         }
-        outputDirectory = testingFolder;
     }
+    outputDirectory = testingFolder;
 }
 
 void PeakRMSCompressorWorkbenchAudioProcessor::printBufferValues(const juce::AudioBuffer<float>& buffer, const juce::String& label) const
