@@ -62,7 +62,7 @@ To add a new preset:
 
 **Notes**:
 - Ensure the `id` is unique.
-- Use valid parameter ranges (defind in `util/include/Constants.h`).
+- Use valid parameter ranges (defined in `util/include/Constants.h`).
 
 ---
 
