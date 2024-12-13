@@ -32,6 +32,38 @@ This application was developed as part of the bachelor's thesis titled *Experime
 
 To customize the output behavior, update the appropriate parameters in the **`Config.h`** file before running the application.
 
+### Adding a New Preset to `Presets.h`
+
+To add a new preset:
+
+1. **Define the Preset**:
+   - Open `Source/utils/include/Constants.h`.
+   - Add a new `PresetData` entry inside the `Presets` namespace.
+
+     Example:
+     ```cpp
+     constexpr PresetData Piano = {
+         6, "Piano",
+         { -22.0f, 3.5f, 15.0f, 90.0f, 1.5f, 0.0f }, // Peak
+         { -24.0f, 3.8f, 20.0f, 120.0f, 1.8f, 0.0f } // RMS
+     };
+     ```
+
+2. **Add to the Preset List**:
+   - Add the new preset to `AllPresets`:
+     ```cpp
+     constexpr auto AllPresets = std::array{
+         Drums, Bass, Guitar, Piano
+     };
+     ```
+
+3. **Save and Rebuild**:
+   - Save `Presets.h` and rebuild your project.
+
+**Notes**:
+- Ensure the `id` is unique.
+- Use valid parameter ranges (defind in `Source/utils/include/Constants.h`).
+
 ---
 
 ## Setup Guides
