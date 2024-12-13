@@ -120,7 +120,7 @@ void Metrics::extractMetrics(float peakRatio, float rmsRatio)
     peakMetrics.rms = getRMSValue(peakMetrics.meanSquare);
     peakMetrics.crestFactor = getCrestFactor(peakMetrics.peak, peakMetrics.rms);
     peakMetrics.lufs = getLUFS(*peakCompressedSignal);
-    peakMetrics.dynamicRangeReduction = getDynamicRangeReduction(false);
+    peakMetrics.dynamicRangeReduction = getDynamicRangeReduction(peakMetrics.crestFactor);
     peakMetrics.avgGR = getAverageGainReduction(*peakGainReductionSignal);
     peakMetrics.maxGR = getMaxGainReduction(*peakGainReductionSignal);
     
@@ -130,7 +130,7 @@ void Metrics::extractMetrics(float peakRatio, float rmsRatio)
     rmsMetrics.rms = getRMSValue(rmsMetrics.meanSquare);
     rmsMetrics.crestFactor = getCrestFactor(rmsMetrics.peak, rmsMetrics.rms);
     rmsMetrics.lufs = getLUFS(*rmsCompressedSignal);
-    rmsMetrics.dynamicRangeReduction = getDynamicRangeReduction(true);
+    rmsMetrics.dynamicRangeReduction = getDynamicRangeReduction(rmsMetrics.crestFactor);
     rmsMetrics.avgGR = getAverageGainReduction(*rmsGainReductionSignal);
     rmsMetrics.maxGR = getMaxGainReduction(*rmsGainReductionSignal);
 
@@ -732,19 +732,8 @@ float Metrics::getLUFS(const juce::AudioBuffer<float>& buffer)
     return getIntegratedLoudness(getMeanSquareEnergy(kWeightedBuffer));
 }
 
-float Metrics::getDynamicRangeReduction(bool isRMS) {
-   
-    float uncompressedRange = uncompressedMetrics.crestFactor;
-    
-    float compressedRange = 0.0f;
-    if (!isRMS) {
-        compressedRange = peakMetrics.crestFactor;
-    } else {
-        compressedRange = rmsMetrics.crestFactor;
-    }
-
-    return uncompressedRange - compressedRange;
-    
+float Metrics::getDynamicRangeReduction(float compressedCrestFactor) {
+    return uncompressedMetrics.crestFactor - compressedCrestFactor; 
 }
 
 float Metrics::getMaxGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer) const

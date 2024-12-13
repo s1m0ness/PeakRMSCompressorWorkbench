@@ -613,7 +613,9 @@ void PeakRMSCompressorWorkbenchAudioProcessor::saveMetrics()
     juce::String metricsContent;
     metricsContent << "Metrics Summary for: " << selectedFile.getFileName() << "\n\n";
     metricsContent << uncompressed.formatMetrics();
+    metricsContent << formatParameterValues(false);
     metricsContent << peak.formatMetrics();
+    metricsContent << formatParameterValues(true);
     metricsContent << rms.formatMetrics();
     
     saveMetricsToFile(metricsContent, metricsOutputFile);
@@ -680,14 +682,14 @@ juce::File PeakRMSCompressorWorkbenchAudioProcessor::createUniqueFile(const juce
 {
     juce::File baseFile = outputDirectory.getChildFile(selectedFile.getFileNameWithoutExtension() 
                                                        + "_" + fileName + extension);
+
     juce::File uniqueFile = baseFile;
     int counter = 2;
 
-    // Check if the file already exists
     while (uniqueFile.existsAsFile()) {
-        // Generate a new file name with a number appended
+        uniqueFile = baseFile;
         juce::String newName = uniqueFile.getFileNameWithoutExtension()
-            + "_" + fileName + "_" + juce::String(counter) + extension;
+            + "_" + juce::String(counter) + extension;
         uniqueFile = uniqueFile.getParentDirectory().getChildFile(newName);
         ++counter;
     }
@@ -707,20 +709,28 @@ void PeakRMSCompressorWorkbenchAudioProcessor::createFolderForSaving()
     outputDirectory = testingFolder;
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::printBufferValues(const juce::AudioBuffer<float>& buffer, const juce::String& label) const
+juce::String PeakRMSCompressorWorkbenchAudioProcessor::formatParameterValues(bool isRMS)
 {
-    DBG("Printing values for: " + label);
-    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
-    {
-        DBG("Channel: " + juce::String(channel));
-        const float* channelData = buffer.getReadPointer(channel);
-
-        for (int i = 90000; i < std::min(90100, buffer.getNumSamples()); ++i)
-        {
-            DBG("Sample[" + juce::String(i) + "]: " + juce::String(channelData[i]));
-        }
-    }
-    DBG("Finished printing values for: " + label);
+    juce::String content;
+    if (!isRMS) {
+        content << "Compression parameter values for peak detection:\n";
+        content << "Threshold: " << *parameters.getRawParameterValue("peak_threshold") << ", ";
+        content << "Ratio: " << *parameters.getRawParameterValue("peak_ratio") << ", ";
+        content << "Knee: " << *parameters.getRawParameterValue("peak_knee") << ", ";
+        content << "Attack: " << *parameters.getRawParameterValue("peak_attack") << ", ";
+        content << "Release: " << *parameters.getRawParameterValue("peak_release") << ", ";
+        content << "Makeup Gain: " << *parameters.getRawParameterValue("peak_makeup") << ".";
+    } else {
+        content << "Compression parameter values for rms detection:\n";
+        content << "Threshold: " << *parameters.getRawParameterValue("rms_threshold") << ", ";
+        content << "Ratio: " << *parameters.getRawParameterValue("rms_ratio") << ", ";
+        content << "Knee: " << *parameters.getRawParameterValue("rms_knee") << ", ";
+        content << "Attack: " << *parameters.getRawParameterValue("rms_attack") << ", ";
+        content << "Release: " << *parameters.getRawParameterValue("rms_release") << ", ";
+        content << "Makeup Gain: " << *parameters.getRawParameterValue("rms_makeup") << ".";
+    } 
+    content << "\n";
+    return content;
 }
 
 //==============================================================================

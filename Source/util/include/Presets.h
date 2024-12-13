@@ -33,6 +33,7 @@ namespace Presets
             constexpr float Attack = 5.0f;
             constexpr float Release = 100.0f;
             constexpr float Knee = 1.0f;
+            constexpr float Makeup = 2.6f;
         }
 
         namespace RMS {
@@ -41,6 +42,7 @@ namespace Presets
             constexpr float Attack = 10.0f;
             constexpr float Release = 165.0f;
             constexpr float Knee = 1.0f;
+            constexpr float Makeup = 2.4f;
         }
     }
 
@@ -54,6 +56,7 @@ namespace Presets
             constexpr float Attack = 20.0f;
             constexpr float Release = 60.0f;
             constexpr float Knee = 2.0f;
+            constexpr float Makeup = 0.f;
         }
 
         namespace RMS {
@@ -62,6 +65,7 @@ namespace Presets
             constexpr float Attack = 25.0f;
             constexpr float Release = 170.0f;
             constexpr float Knee = 2.0f;
+            constexpr float Makeup = 0.f;
         }
     }
 
@@ -75,6 +79,7 @@ namespace Presets
             constexpr float Attack = 40.0f;
             constexpr float Release = 150.0f;
             constexpr float Knee = 2.0f;
+            constexpr float Makeup = 0.f;
         }
 
         namespace RMS {
@@ -83,6 +88,7 @@ namespace Presets
             constexpr float Attack = 50.0f;
             constexpr float Release = 200.0f;
             constexpr float Knee = 2.5f;
+            constexpr float Makeup = 0.f;
         }
     }
 
@@ -96,6 +102,7 @@ namespace Presets
             constexpr float Attack = 30.0f;
             constexpr float Release = 100.0f;
             constexpr float Knee = 1.2f;
+            constexpr float Makeup = 0.f;
         }
 
         namespace RMS {
@@ -104,6 +111,7 @@ namespace Presets
             constexpr float Attack = 40.0f;
             constexpr float Release = 150.0f;
             constexpr float Knee = 1.8f;
+            constexpr float Makeup = 0.f;
         }
     }
 
@@ -117,6 +125,7 @@ namespace Presets
             constexpr float Attack = 20.0f;
             constexpr float Release = 250.0f;
             constexpr float Knee = 1.0f;
+            constexpr float Makeup = 0.f;
         }
 
         namespace RMS {
@@ -125,6 +134,7 @@ namespace Presets
             constexpr float Attack = 30.0f;
             constexpr float Release = 300.0f;
             constexpr float Knee = 1.5f;
+            constexpr float Makeup = 0.f;
         }
     }
 
@@ -140,6 +150,7 @@ namespace Presets
             constexpr float Attack = 20.0f;
             constexpr float Release = 250.0f;
             constexpr float Knee = 1.0f;
+            constexpr float Makeup = 0.f;
         }
 
         namespace RMS {
@@ -148,6 +159,7 @@ namespace Presets
             constexpr float Attack = 30.0f;
             constexpr float Release = 300.0f;
             constexpr float Knee = 1.5f;
+            constexpr float Makeup = 0.f;
         }
     }
 
@@ -161,6 +173,7 @@ namespace Presets
             constexpr float Attack = 20.0f;
             constexpr float Release = 250.0f;
             constexpr float Knee = 1.0f;
+            constexpr float Makeup = 0.f;
         }
 
         namespace RMS {
@@ -169,6 +182,7 @@ namespace Presets
             constexpr float Attack = 30.0f;
             constexpr float Release = 300.0f;
             constexpr float Knee = 1.5f;
+            constexpr float Makeup = 0.f;
         }
     }*/
 }
@@ -188,11 +202,13 @@ static const std::map<int, Preset> PresetParameters = {
           {"peak_attack",    Presets::Drums::Peak::Attack},
           {"peak_release",   Presets::Drums::Peak::Release},
           {"peak_knee",      Presets::Drums::Peak::Knee},
+          {"peak_makeup",    Presets::Drums::Peak::Makeup},
           {"rms_threshold",  Presets::Drums::RMS::Threshold},
           {"rms_ratio",      Presets::Drums::RMS::Ratio},
           {"rms_attack",     Presets::Drums::RMS::Attack},
           {"rms_release",    Presets::Drums::RMS::Release},
-          {"rms_knee",       Presets::Drums::RMS::Knee}
+          {"rms_knee",       Presets::Drums::RMS::Knee},
+          {"rms_makeup",     Presets::Drums::RMS::Makeup}
         },
       }
     },
@@ -204,11 +220,13 @@ static const std::map<int, Preset> PresetParameters = {
           {"peak_attack",    Presets::Bass::Peak::Attack},
           {"peak_release",   Presets::Bass::Peak::Release},
           {"peak_knee",      Presets::Bass::Peak::Knee},
+          {"peak_makeup",    Presets::Bass::Peak::Makeup},
           {"rms_threshold",  Presets::Bass::RMS::Threshold},
           {"rms_ratio",      Presets::Bass::RMS::Ratio},
           {"rms_attack",     Presets::Bass::RMS::Attack},
           {"rms_release",    Presets::Bass::RMS::Release},
-          {"rms_knee",       Presets::Bass::RMS::Knee}
+          {"rms_knee",       Presets::Bass::RMS::Knee},
+          {"rms_makeup",     Presets::Bass::RMS::Makeup}
         },
       }
     },
@@ -220,11 +238,13 @@ static const std::map<int, Preset> PresetParameters = {
           {"peak_attack",    Presets::Guitar::Peak::Attack},
           {"peak_release",   Presets::Guitar::Peak::Release},
           {"peak_knee",      Presets::Guitar::Peak::Knee},
+          {"peak_makeup",    Presets::Guitar::Peak::Makeup},
           {"rms_threshold",  Presets::Guitar::RMS::Threshold},
           {"rms_ratio",      Presets::Guitar::RMS::Ratio},
           {"rms_attack",     Presets::Guitar::RMS::Attack},
           {"rms_release",    Presets::Guitar::RMS::Release},
-          {"rms_knee",       Presets::Guitar::RMS::Knee}
+          {"rms_knee",       Presets::Guitar::RMS::Knee},
+          {"rms_makeup",     Presets::Guitar::RMS::Makeup}
         },
       }
     },
@@ -236,11 +256,13 @@ static const std::map<int, Preset> PresetParameters = {
           {"peak_attack",    Presets::Vocals::Peak::Attack},
           {"peak_release",   Presets::Vocals::Peak::Release},
           {"peak_knee",      Presets::Vocals::Peak::Knee},
+          {"peak_makeup",    Presets::Vocals::Peak::Makeup},
           {"rms_threshold",  Presets::Vocals::RMS::Threshold},
           {"rms_ratio",      Presets::Vocals::RMS::Ratio},
           {"rms_attack",     Presets::Vocals::RMS::Attack},
           {"rms_release",    Presets::Vocals::RMS::Release},
-          {"rms_knee",       Presets::Vocals::RMS::Knee}
+          {"rms_knee",       Presets::Vocals::RMS::Knee},
+          {"rms_makeup",     Presets::Vocals::RMS::Makeup}
         },
       }
     },
@@ -252,11 +274,14 @@ static const std::map<int, Preset> PresetParameters = {
           {"peak_attack",    Presets::FullMix::Peak::Attack},
           {"peak_release",   Presets::FullMix::Peak::Release},
           {"peak_knee",      Presets::FullMix::Peak::Knee},
+          {"peak_makeup",    Presets::FullMix::Peak::Makeup},
           {"rms_threshold",  Presets::FullMix::RMS::Threshold},
           {"rms_ratio",      Presets::FullMix::RMS::Ratio},
           {"rms_attack",     Presets::FullMix::RMS::Attack},
           {"rms_release",    Presets::FullMix::RMS::Release},
-          {"rms_knee",       Presets::FullMix::RMS::Knee}
+          {"rms_knee",       Presets::FullMix::RMS::Knee},
+          {"rms_makeup",     Presets::FullMix::RMS::Makeup}
+
         },
       }
     },
@@ -271,11 +296,13 @@ static const std::map<int, Preset> PresetParameters = {
           {"peak_attack",    Presets::UserPreset::Peak::Attack},
           {"peak_release",   Presets::UserPreset::Peak::Release},
           {"peak_knee",      Presets::UserPreset::Peak::Knee},
+          {"peak_makeup",    Presets::userPreset::Peak::Makeup},
           {"rms_threshold",  Presets::UserPreset::RMS::Threshold},
           {"rms_ratio",      Presets::UserPreset::RMS::Ratio},
           {"rms_attack",     Presets::UserPreset::RMS::Attack},
           {"rms_release",    Presets::UserPreset::RMS::Release},
-          {"rms_knee",       Presets::UserPreset::RMS::Knee}
+          {"rms_knee",       Presets::UserPreset::RMS::Knee},
+          {"rms_makeup",     Presets::UserPreset::RMS::Makeup}
         },
       }
     },
@@ -288,11 +315,13 @@ static const std::map<int, Preset> PresetParameters = {
           {"peak_attack",    Presets::UserPreset2::Peak::Attack},
           {"peak_release",   Presets::UserPreset2::Peak::Release},
           {"peak_knee",      Presets::UserPreset2::Peak::Knee},
+          {"peak_makeup",    Presets::userPreset2::Peak::Makeup},
           {"rms_threshold",  Presets::UserPreset2::RMS::Threshold},
           {"rms_ratio",      Presets::UserPreset2::RMS::Ratio},
           {"rms_attack",     Presets::UserPreset2::RMS::Attack},
           {"rms_release",    Presets::UserPreset2::RMS::Release},
-          {"rms_knee",       Presets::UserPreset2::RMS::Knee}
+          {"rms_knee",       Presets::UserPreset2::RMS::Knee},
+          {"rms_makeup",     Presets::UserPreset2::RMS::Makeup}
         },
       }
     },*/

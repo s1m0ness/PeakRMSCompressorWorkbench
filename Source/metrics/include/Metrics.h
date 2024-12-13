@@ -122,7 +122,8 @@ private:
 
     float getLUFS(const juce::AudioBuffer<float>& buffer);
 
-    float getDynamicRangeReduction(bool isRMS);
+    float getDynamicRangeReduction(float compressedCrestFactor);
+
 
 
 

@@ -204,7 +204,9 @@ public:
 private:
     juce::File createUniqueFile(const juce::String& label, const juce::String& extension);
     void createFolderForSaving();
-    void printBufferValues(const juce::AudioBuffer<float>& buffer, const juce::String& label) const;
+    
+    juce::String formatParameterValues(bool isRMS);
+
 
     juce::AudioProcessorValueTreeState parameters;
     //==============================================================================
