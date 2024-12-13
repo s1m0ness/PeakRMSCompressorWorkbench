@@ -248,7 +248,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 - Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
 - In Xcode:
   - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
-  - Go to the **Run** section, click on **Executables**, select **Other...** and navigate to.
+  - Go to the **Run** section, click on **Executables**, select **Other...** and navigate to:
     ```plaintext
     JUCE/extras/AudioPluginHost/Builds/MacOS/builds/Debug/
     ```
