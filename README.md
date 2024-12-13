@@ -216,12 +216,12 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```
 - Right-click on `AudioFilePlayer.jucer` and select **Open with** and navigate to:
   ```plaintext
-  JUCE\extras\Projucer
+  JUCE/extras/Projucer
   ```
   and select `Projucer.jucer` file.
 - Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select the directory:
   ```plaintext
-  JUCE\modules
+  JUCE/modules
   ```
 - Open `AudioFilePlayer.jucer` in Projucer, select the Xcode exporter, and build it.
 
@@ -246,7 +246,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   - Go to the **Run** section, click on **Executables** and select **other**.
   - Select:
     ```plaintext
-    JUCE\extras\AudioPluginHost\Builds\MacOS\builds\Debug\AudioPluginHost.app
+    JUCE/extras/AudioPluginHost/Builds/MacOS/builds/Debug/AudioPluginHost.app
     ```
 
 ---
@@ -259,7 +259,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
   - Save the configuration as a filter graph file:
     ```plaintext
-    PeakRMSCompressorWorkbench\PeakRMSCompressorWorkbench.filtergraph
+    PeakRMSCompressorWorkbench/PeakRMSCompressorWorkbench.filtergraph
     ```
 
 ---
