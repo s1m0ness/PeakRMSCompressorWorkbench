@@ -159,8 +159,8 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 To set up and run this project on **MacOS**, ensure you have the following installed:
 
 1. [JUCE](https://juce.com/): A C++ framework for audio application development.
-2. [Xcode](https://developer.apple.com/xcode/): The IDE for building and running the project.
-3. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback.
+2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback
+3. [Xcode](https://developer.apple.com/xcode/): The IDE for building and running the project.
 
 ---
 
