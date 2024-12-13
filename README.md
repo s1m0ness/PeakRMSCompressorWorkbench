@@ -60,7 +60,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 ---
 
 #### 3. Install Visual Studio 2022
-*(Video reference: [2:13](https://youtu.be/Mo0Oco3Vimo?si=KT-B_rA4bZAtaKIj&t=1397))*
+*(Video reference: [23:17](https://youtu.be/Mo0Oco3Vimo?si=KT-B_rA4bZAtaKIj&t=1397))*
 - Download and install **[Visual Studio Community Edition 2022](https://visualstudio.microsoft.com/)**.
 - During installation, select the **Desktop Development with C++** workload.
 
