@@ -53,7 +53,7 @@ To add a new preset:
    - Add the new preset to `AllPresets`:
      ```cpp
      constexpr auto AllPresets = std::array{
-         Drums, Bass, Guitar, Piano
+         Drums, Bass, Guitar, Vocals, FullMix, Piano
      };
      ```
 
