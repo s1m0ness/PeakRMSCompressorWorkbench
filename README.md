@@ -274,7 +274,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 
 ## Notes
 - Make sure the Projucer **Global Paths** are correctly set to your **JUCE/modules** directory.
-- Make sure the **AudioPluginHost.exe** path is correctly set in the project properties.
+- Make sure the **AudioPluginHost** path is correctly set in the project properties.
 - If you encounter issues with VST scanning (on Windows), ensure that the VST3 folder permissions are correctly configured.
 
 ---
