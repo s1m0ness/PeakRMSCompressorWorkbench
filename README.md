@@ -153,7 +153,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 - In **AudioPluginHost**:
   - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
-  - Save the configuration as a filter graph file in your `PeakRMSCompressorWorkbench` directory.
+  - Save the configuration as a `.filtergraph` file in your `PeakRMSCompressorWorkbench` directory.
 
 ---
 
@@ -262,7 +262,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 - In **AudioPluginHost**:
   - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
-  - Save the configuration as a filter graph file in your `PeakRMSCompressorWorkbench` directory.
+  - Save the configuration as a `.filtergraph` file in your `PeakRMSCompressorWorkbench` directory.
 
 ---
 
