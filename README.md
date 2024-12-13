@@ -104,7 +104,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   JUCE\extras\AudioPluginHost
   ```
-- Open `AudioPluginHost.jucer` in Projucer and build the solution.
+- Open `AudioPluginHost.jucer` in Projucer, click Visual Studio to export and build the solution.
 
 ---
 
