@@ -1,7 +1,7 @@
 
 # PeakRMSCompressorWorkbench
 
-This repository hosts **PeakRMSCompressorWorkbench**, a [JUCE-based](https://github.com/juce-framework/JUCE) application inspired by the [CTAGDRC project](https://github.com/ctag-fh-kiel/ctagDRC) designed to test and analyze the effects of **dynamic range compression** algorithms on audio signals using **peak-based and RMS-based level detection** methods. It provides tools to measure and compare these effects via various metrics.
+This repository hosts **PeakRMSCompressorWorkbench**, a [JUCE-based](https://github.com/juce-framework/JUCE) application inspired by the [CTAGDRC project](https://github.com/p-hlp/CTAGDRC) designed to test and analyze the effects of **dynamic range compression** algorithms on audio signals using **peak-based and RMS-based level detection** methods. It provides tools to measure and compare these effects via various metrics.
 
 This application was developed as part of the bachelor's thesis titled *Experimental Workbench for Testing Audio Signal Dynamic Range Compression Algorithms.*
 
