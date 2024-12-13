@@ -40,7 +40,7 @@ To set up and run this project, ensure you have the following installed:
 ---
 
 ### Step-by-Step Setup Guide
-*(Based on [this video tutorial](https://youtu.be/Mo0Oco3Vimo?si=Sj4i6uZfiMJ6dL5S&t=1360))*
+*(Based on [this video tutorial](https://youtu.be/Mo0Oco3Vimo?si=CIXw9uVYdAGgwvrk&t=1360))*
 
 ---
 
@@ -161,6 +161,11 @@ To set up and run this project on **MacOS**, ensure you have the following insta
 1. [JUCE](https://juce.com/): A C++ framework for audio application development.
 2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback
 3. [Xcode](https://developer.apple.com/xcode/): The IDE for building and running the project.
+
+---
+
+### Step-by-Step Setup Guide
+*(Based on [this video tutorial](https://youtu.be/Mo0Oco3Vimo?si=rq7qwTxjapcN3Jwd&t=253))*
 
 ---
 
