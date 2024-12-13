@@ -90,11 +90,11 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   AudioFilePlayerPlugin\
   ```
-- Right-click on AudioFilePlayer.jucer and select **Open in Program** and navigate to:
+- Right-click on `AudioFilePlayer.jucer` and select **Open in Program** and navigate to:
   ```plaintext
   JUCE\extras\Projucer
   ```
-  and select Projucer.jucer file.
+  and select `Projucer.jucer` file.
 - Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select this directory:
 - ```plaintext
   JUCE\modules
