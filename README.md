@@ -81,7 +81,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 ---
 
 #### 5. Set Up AudioFilePlayerPlugin and JUCE GLobal Paths
-*(Video reference: [42:06](https://youtu.be/Mo0Oco3Vimo?si=l5YVJTxdnHX2p-Gb&t=2526))*
+*(Video reference: [42:06](https://youtu.be/Mo0Oco3Vimo?si=l5YVJTxdnHX2p-Gb&t=2526), [29:32](https://youtu.be/Mo0Oco3Vimo?si=uqpybmnKDi5PjgDB&t=1772))*
 - Clone the AudioFilePlayerPlugin repository:
   ```bash
   git clone https://github.com/hollance/AudioFilePlayerPlugin.git
