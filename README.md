@@ -1,13 +1,17 @@
 
 # PeakRMSCompressorWorkbench
 
-This repository hosts **PeakRMSCompressorWorkbench**, a JUCE-based application designed to test and analyze the effects of **dynamic range compression** algorithms on audio signals using **peak-based and RMS-based level detection** methods. It provides tools to measure and compare these effects via various metrics.
+This repository hosts **PeakRMSCompressorWorkbench**, a [JUCE-based](https://github.com/juce-framework/JUCE) application inspired by the [CTAGDRC project](https://github.com/ctag-fh-kiel/ctagDRC) designed to test and analyze the effects of **dynamic range compression** algorithms on audio signals using **peak-based and RMS-based level detection** methods. It provides tools to measure and compare these effects via various metrics.
+
+This application was developed as part of the bachelor's thesis titled *Experimental Workbench for Testing Audio Signal Dynamic Range Compression Algorithms.*
+
+
 
 ---
 
 ## Features
 
-- **Peak and RMS Compression**: Analyze compression behavior using peak and RMS level detection methods.
+- **Peak and RMS Compression**: Analyze compression behavior using peak-based and RMS-based level detection methods.
 - **Metrics Extraction**: LUFS, dynamic range, crest factor, and other key metrics.
 - **Real-time Playback**: Integrates with [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin) by **Matkat Music** for testing in real-time.
 
@@ -101,7 +105,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 6. Set Up AudioFilePlayerPlugin and JUCE GLobal Paths
+#### 6. Set Up AudioFilePlayerPlugin and JUCE Global Paths
 *(Video reference: [42:06](https://youtu.be/Mo0Oco3Vimo?si=l5YVJTxdnHX2p-Gb&t=2526), [29:32](https://youtu.be/Mo0Oco3Vimo?si=uqpybmnKDi5PjgDB&t=1772))*
 - Clone the AudioFilePlayerPlugin repository:
   ```bash
