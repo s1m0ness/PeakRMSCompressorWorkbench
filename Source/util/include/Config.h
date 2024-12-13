@@ -1,5 +1,5 @@
 /*
- * This file defines the constans used acrossed the project.
+ * This file defines the output configuration for the project.
  *
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.
@@ -24,8 +24,14 @@ namespace Config
 {
     namespace OutputPath
     {
-        // Configure the path to save compressed audio files and metrics data
-        constexpr char path[] = "C:/Users/Public/Documents";
+        // Detect operating system and configure the output path accordingly
+#ifdef _WIN32
+        constexpr char path[] = "C:/Users/Public/Documents"; // Windows default path
+#elif defined(__APPLE__)
+        constexpr char path[] = "/Users/Shared/"; // macOS default path
+#else
+        constexpr char path[] = "./"; // Fallback for other OS
+#endif
     }
 
     namespace saveCompressedFiles
