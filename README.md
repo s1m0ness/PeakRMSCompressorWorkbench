@@ -95,8 +95,8 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   JUCE\extras\Projucer
   ```
   and select `Projucer.jucer` file.
-- Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select this directory:
-- ```plaintext
+- Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select the directory:
+  ```plaintext
   JUCE\modules
   ```
 - in Projucer, click Visual Studio to export and build the solution.
