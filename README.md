@@ -91,7 +91,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   AudioFilePlayerPlugin\
   ```
 - Right-click on AudioFilePlayer.jucer and select **Open in Program** and navigate to:
- ```plaintext
+  ```plaintext
   JUCE\extras\Projucer
   ```
   and select Projucer.jucer file.
