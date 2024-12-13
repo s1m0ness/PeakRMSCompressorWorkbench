@@ -88,9 +88,9 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```
 - Navigate to the build directory:
   ```plaintext
-  AudioFilePlayerPlugin\Builds\VisualStudio2022
+  AudioFilePlayerPlugin\
   ```
-- Open `AudioFilePlayer.sln` in Visual Studio and build it.
+- Open `AudioFilePlayer.jucer`, open in Visual Studio and build it.
 
 ---
 
