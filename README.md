@@ -60,7 +60,7 @@ git clone https://github.com/s1m0ness/PeakRMSCompressorWorkbench.git
 ---
 
 #### 2. Run Setup Script
-Run the `setup.sh` script located in the repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
+Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
 ```bash
 ./setup.sh
 ```
@@ -88,7 +88,18 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 
 ---
 
-#### 5. Set Up AudioFilePlayerPlugin and JUCE GLobal Paths
+#### 5. Modify VST3 Permissions
+*(Video reference: [37:36](https://youtu.be/Mo0Oco3Vimo?si=sD74MpbJAyOmU3MD&t=2256))*
+- Navigate to the following directory:
+  ```plaintext
+  C:\Program Files\Common Files
+  ```
+- Right-click the `VST3` folder (create it if doesn't exist), select **Properties**, then go to the **Security** tab.
+- Select **Users** and allow modification permissions. Click **Apply**.
+
+---
+
+#### 6. Set Up AudioFilePlayerPlugin and JUCE GLobal Paths
 *(Video reference: [42:06](https://youtu.be/Mo0Oco3Vimo?si=l5YVJTxdnHX2p-Gb&t=2526), [29:32](https://youtu.be/Mo0Oco3Vimo?si=uqpybmnKDi5PjgDB&t=1772))*
 - Clone the AudioFilePlayerPlugin repository:
   ```bash
@@ -102,15 +113,15 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   JUCE\extras\Projucer
   ```
-  and select `Projucer.jucer` file.
-- Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select the directory:
+  and select `Projucer` file.
+- Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules**, click on **Select directory** and navigate to:
   ```plaintext
   JUCE\modules
   ```
 - in Projucer, click on Visual Studio exporter and build the solution.
 ---
 
-#### 6. Set Up AudioPluginHost
+#### 7. Set Up AudioPluginHost
 *(Video reference: [35:32](https://youtu.be/Mo0Oco3Vimo?si=WoisnAayUc8t_EST&t=2132))*
 - Navigate to the JUCE AudioPluginHost directory:
   ```plaintext
@@ -120,29 +131,18 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 
 ---
 
-#### 7. Configure the PeakRMSCompressorWorkbench Project
+#### 8. Configure the PeakRMSCompressorWorkbench Project
 *(Video reference: [36:06](https://youtu.be/Mo0Oco3Vimo?si=rt7h6I_aILSQKOo4&t=2166))*
 - Navigate to your `PeakRMSCompressorWorkbench` directory.
 - Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
 - In Visual Studio:
   - Right-click on `PeakRMSCompressorWorkbench_VST3` in Solution Explorer and select **Properties**.
   - Go to **Configuration Properties > Debugging**.
-  - Click on the **Command** field, select **Browse** and navigate to:
+  - Click on the **Command** field, select **<browse...>** and navigate to:
     ```plaintext
     JUCE\extras\AudioPluginHost\Builds\VisualStudio2022\x64\Debug\App
     ```
   - Select `AudioPluginHost.exe` and click **Apply**.
-
----
-
-#### 8. Modify VST3 Permissions
-*(Video reference: [37:36](https://youtu.be/Mo0Oco3Vimo?si=sD74MpbJAyOmU3MD&t=2256))*
-- Navigate to the following directory:
-  ```plaintext
-  C:\Program Files\Common Files
-  ```
-- Right-click the `VST3` folder (create it if doesn't exist), select **Properties**, then go to the **Security** tab.
-- Select **Users** and allow modification permissions. Click **Apply**.
 
 ---
 
@@ -182,7 +182,7 @@ git clone https://github.com/s1m0ness/PeakRMSCompressorWorkbench.git
 ---
 
 #### 2. Run Setup Script
-Run the `setup.sh` script located in the repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
+Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
 ```bash
 ./setup.sh
 ```
@@ -248,7 +248,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 - Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
 - In Xcode:
   - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
-  - Go to the **Run** section, click on **Executables**, select **other** and navigate to.
+  - Go to the **Run** section, click on **Executables**, select **Other...** and navigate to.
     ```plaintext
     JUCE/extras/AudioPluginHost/Builds/MacOS/builds/Debug/
     ```
