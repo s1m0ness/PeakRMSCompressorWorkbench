@@ -37,7 +37,7 @@ To customize the output behavior, update the appropriate parameters in the **`Co
 To add a new preset:
 
 1. **Define the Preset**:
-   - Open `Source/utils/include/Constants.h`.
+   - Open `Source/utils/include/Presets.h`.
    - Add a new `PresetData` entry inside the `Presets` namespace.
 
      Example:
