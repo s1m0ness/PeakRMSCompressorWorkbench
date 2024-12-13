@@ -250,7 +250,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
   - Go to the **Run** section, click on **Executables**, select **Other...** and navigate to:
     ```plaintext
-    JUCE/extras/AudioPluginHost/Builds/MacOS/builds/Debug/
+    JUCE/extras/AudioPluginHost/Builds/MacOS/build/Debug/
     ```
   - Select `AudioPluginHost.app`.
 
