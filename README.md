@@ -209,7 +209,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   AudioFilePlayerPlugin/
   ```
-- Right-click on `AudioFilePlayer.jucer` and select **Open in Program** and navigate to:
+- Right-click on `AudioFilePlayer.jucer` and select **Open with** and navigate to:
   ```plaintext
   JUCE\extras\Projucer
   ```
