@@ -30,6 +30,11 @@ To customize the output behavior, update the appropriate parameters in the **`Co
 
 ---
 
+## Setup Guides
+
+- [Windows Setup](#windows-setup)
+- [MacOS Setup](#macos-setup)
+
 ## Windows Setup
 
 ### Prerequisites
