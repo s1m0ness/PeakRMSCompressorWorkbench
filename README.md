@@ -127,11 +127,11 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 - In Visual Studio:
   - Right-click on `PeakRMSCompressorWorkbench_VST3` in Solution Explorer and select **Properties**.
   - Go to **Configuration Properties > Debugging**.
-  - Set the **Command** field to point to:
+  - Click on the **Command** field, select **Browse** and navigate to:
     ```plaintext
-    JUCE\extras\AudioPluginHost\Builds\VisualStudio2022\x64\Debug\App\AudioPluginHost.exe
+    JUCE\extras\AudioPluginHost\Builds\VisualStudio2022\x64\Debug\App
     ```
-  - Click **Apply**.
+  - Select `AudioPluginHost.exe` and click **Apply**.
 
 ---
 
@@ -153,10 +153,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 - In **AudioPluginHost**:
   - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
-  - Save the configuration as a filter graph file:
-    ```plaintext
-    PeakRMSCompressorWorkbench\PeakRMSCompressorWorkbench.filtergraph
-    ```
+  - Save the configuration as a filter graph file in your `PeakRMSCompressorWorkbench` directory.
 
 ---
 
@@ -251,11 +248,11 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 - Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
 - In Xcode:
   - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
-  - Go to the **Run** section, click on **Executables** and select **other**.
-  - Select:
+  - Go to the **Run** section, click on **Executables**, select **other** and navigate to.
     ```plaintext
-    JUCE/extras/AudioPluginHost/Builds/MacOS/builds/Debug/AudioPluginHost.app
+    JUCE/extras/AudioPluginHost/Builds/MacOS/builds/Debug/
     ```
+  - Select `AudioPluginHost.app`.
 
 ---
 
@@ -265,10 +262,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 - In **AudioPluginHost**:
   - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
-  - Save the configuration as a filter graph file:
-    ```plaintext
-    PeakRMSCompressorWorkbench/PeakRMSCompressorWorkbench.filtergraph
-    ```
+  - Save the configuration as a filter graph file in your `PeakRMSCompressorWorkbench` directory.
 
 ---
 
