@@ -154,8 +154,6 @@ void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, 
     outLevelFollower.setPeakDecay(0.3f);
     metrics.prepare(sampleRate);
 
-    createFolderForSaving(); // create testing folder for saving metrics and compressed audio signals
-
     // Initialize default RMS parameters, since they can have random values if the rms switch wasn't toggled.
     compressor.setRMSThreshold(0.0f); 
     compressor.setRMSRatio(3.0f);         
@@ -454,6 +452,8 @@ void PeakRMSCompressorWorkbenchAudioProcessor::extractMetrics() {
 
         progress = 0.5;
 
+        createFolderForSaving(); // create testing folder for saving metrics and compressed audio signals
+
         if (saveFiles) {
             // Save compressed audio signals in .wav
             saveCompressedAudio();
@@ -649,15 +649,6 @@ void PeakRMSCompressorWorkbenchAudioProcessor::SaveCompressedAudioToFile(const j
     juce::WavAudioFormat format;
     std::unique_ptr<AudioFormatWriter> writer;
 
-    if (compressedAudioFile.exists()) {
-        if (!compressedAudioFile.deleteFile()) {
-            DBG("Failed to delete existing file: " + compressedAudioFile.getFullPathName());
-            return;
-        } else {
-            DBG("Existing file deleted: " + compressedAudioFile.getFullPathName());
-        }
-    }
-
     writer.reset(format.createWriterFor(new FileOutputStream(compressedAudioFile),
         44100,
         buffer.getNumChannels(),
@@ -672,22 +663,6 @@ void PeakRMSCompressorWorkbenchAudioProcessor::SaveCompressedAudioToFile(const j
 
 void PeakRMSCompressorWorkbenchAudioProcessor::saveMetricsToFile(const juce::String& metricsContent, const juce::File& metricsFile)
 {
-    // Ensure the parent directory exists
-    if (!metricsFile.getParentDirectory().exists()) {
-        if (!metricsFile.getParentDirectory().createDirectory()) {
-            DBG("Failed to create directory for saving metrics: " + metricsFile.getParentDirectory().getFullPathName());
-            return;
-        }
-    }
-
-    // Delete the existing file if it exists
-    if (metricsFile.existsAsFile()) {
-        if (!metricsFile.deleteFile()) {
-            DBG("Failed to delete existing metrics file: " + metricsFile.getFullPathName());
-            return;
-        }
-    }
-
     // Create and write to the file
     std::unique_ptr<juce::FileOutputStream> stream(metricsFile.createOutputStream());
     if (stream != nullptr) {
@@ -721,13 +696,11 @@ juce::File PeakRMSCompressorWorkbenchAudioProcessor::createUniqueFile(const juce
 
 void PeakRMSCompressorWorkbenchAudioProcessor::createFolderForSaving()
 {
-    juce::File testingFolder = outputDirectory.getChildFile("PeakRMSCompressorWorkbench_testing_results");
+    juce::File baseDirectory = juce::File(Config::OutputPath::path);
+    juce::File testingFolder = baseDirectory.getChildFile("PeakRMSCompressorWorkbench_testing_results");
 
-    if (!testingFolder.exists())
-    {
-        if (!testingFolder.createDirectory())
-        {
-            DBG("Failed to create Testing folder.");
+    if (!testingFolder.exists()) {
+        if (!testingFolder.createDirectory()) {
             return;
         }
     }
