@@ -86,7 +86,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```bash
   git clone https://github.com/hollance/AudioFilePlayerPlugin.git
   ```
-- Navigate to the build directory:
+- Navigate to the directory:
   ```plaintext
   AudioFilePlayerPlugin\
   ```
