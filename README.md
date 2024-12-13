@@ -17,7 +17,7 @@ This application was developed as part of the bachelor's thesis titled *Experime
 
 ### Output Path Configuration
 - The export metrics functionality saves the computed metrics as a `.txt` file. The default export directory is specified in the **`Config.h`** file located in:
-`Source/util/include/Config.h`
+  `util/include/Config.h`
 
 - **Windows Default Output Path**: 
   `C:\Users\Public\Documents`
@@ -37,7 +37,7 @@ To customize the output behavior, update the appropriate parameters in the **`Co
 To add a new preset:
 
 1. **Define the Preset**:
-   - Open `Source/utils/include/Presets.h`.
+   - Open `util/include/Presets.h`.
    - Add a new `PresetData` entry inside the `Presets` namespace.
 
      Example:
@@ -62,7 +62,7 @@ To add a new preset:
 
 **Notes**:
 - Ensure the `id` is unique.
-- Use valid parameter ranges (defind in `Source/utils/include/Constants.h`).
+- Use valid parameter ranges (defind in `util/include/Constants.h`).
 
 ---
 
