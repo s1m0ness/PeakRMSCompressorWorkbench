@@ -59,10 +59,6 @@ namespace Constants
         constexpr float ratioEnd = 24.0f;
         constexpr float ratioInterval = 1.f;
 
-        constexpr float kneeStart = 0.0f;
-        constexpr float kneeEnd = 24.0f;
-        constexpr float kneeInterval = 0.1f;
-
         constexpr float attackStart = 5.0f;
         constexpr float attackEnd = 500.0f;
         constexpr float attackInterval = 1.f;
@@ -70,6 +66,10 @@ namespace Constants
         constexpr float releaseStart = 5.0f;
         constexpr float releaseEnd = 500.0f;
         constexpr float releaseInterval = 1.f;
+
+        constexpr float kneeStart = 0.0f;
+        constexpr float kneeEnd = 24.0f;
+        constexpr float kneeInterval = 0.1f;
 
         constexpr float makeupStart = -40.0f;
         constexpr float makeupEnd = 40.0f;

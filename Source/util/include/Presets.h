@@ -83,7 +83,7 @@ namespace Preset {
         Bass, 
         Guitar, 
         Vocals, 
-        FullMix 
+        FullMix
     };
 }
 
