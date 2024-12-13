@@ -17,7 +17,7 @@ This application was developed as part of the bachelor's thesis titled *Experime
 
 ### Output Path Configuration
 - The export metrics functionality saves the computed metrics as a `.txt` file. The default export directory is specified in the **`Config.h`** file located in:
-`Source\util\include\Config.h`
+`Source/util/include/Config.h`
 
 - **Windows Default Output Path**: 
   `C:\Users\Public\Documents`
@@ -25,7 +25,7 @@ This application was developed as part of the bachelor's thesis titled *Experime
 - **MacOS Default Output Path**: 
   `/Users/Shared/`
   
-  In the output directory, the metrics files are saved under the `\PeakRMSCompressorWorkbench_testing_results` folder.
+  In the output directory, the metrics files are saved under the `/PeakRMSCompressorWorkbench_testing_results` folder.
 
 - **Compressed Files**:
   In `Config.h`, you can configure whether the compressed audio files should also be saved alongside the metrics. By default, this option is set to **false**.
