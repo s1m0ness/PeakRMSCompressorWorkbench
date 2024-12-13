@@ -99,7 +99,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   JUCE\modules
   ```
-- in Projucer, click Visual Studio to export and build the solution.
+- in Projucer, click on Visual Studio exporter and build the solution.
 ---
 
 #### 6. Set Up AudioPluginHost
@@ -108,7 +108,7 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   JUCE\extras\AudioPluginHost
   ```
-- Open `AudioPluginHost.jucer` in Projucer, click Visual Studio to export and build the solution.
+- Open `AudioPluginHost.jucer` in Projucer, click on Visual Studio exporter and build the solution.
 
 ---
 
@@ -152,9 +152,117 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
 
 ---
 
+### MacOS Setup
+
+#### Prerequisites
+
+To set up and run this project on **MacOS**, ensure you have the following installed:
+
+1. [JUCE](https://juce.com/): A C++ framework for audio application development.
+2. [Xcode](https://developer.apple.com/xcode/): The IDE for building and running the project.
+3. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback.
+
+---
+
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/s1m0ness/PeakRMSCompressorWorkbench.git
+```
+
+---
+
+#### 2. Run Setup Script
+Run the `setup.sh` script located in the repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
+```bash
+./setup.sh
+```
+
+---
+
+#### 3. Install Xcode
+*(Video reference: [4:29](https://youtu.be/Mo0Oco3Vimo?si=NGacpIuxCvBcecZJ&t=269))*
+- Navigate to **Apple App Store** on your macOS device and download **Xcode**.
+
+---
+
+#### 4. Install JUCE Framework
+*(Video reference: [6:37](https://youtu.be/Mo0Oco3Vimo?si=SGsWZG0RrVBUTWJp&t=397))*
+- Clone the JUCE repository:
+  ```bash
+  git clone https://github.com/juce-framework/JUCE.git
+  ```
+- Navigate to the Projucer build directory:
+  ```plaintext
+  JUCE/extras/Projucer/Builds/MacOSX/
+  ```
+- Open `Projucer.xcodeproj` in Xcode and build it.
+
+---
+
+#### 5. Set Up AudioFilePlayerPlugin and JUCE Global Paths
+*(Video reference: [19:54](https://youtu.be/Mo0Oco3Vimo?si=x6OzTUsqH1cD6vMb&t=1194), [10:05](https://youtu.be/Mo0Oco3Vimo?si=ZYL3jq7G3K8YuMSS&t=605))*
+- Clone the AudioFilePlayerPlugin repository:
+  ```bash
+  git clone https://github.com/hollance/AudioFilePlayerPlugin.git
+  ```
+- Navigate to the directory:
+  ```plaintext
+  AudioFilePlayerPlugin/
+  ```
+- Right-click on `AudioFilePlayer.jucer` and select **Open in Program** and navigate to:
+  ```plaintext
+  JUCE\extras\Projucer
+  ```
+  and select `Projucer.jucer` file.
+- Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select the directory:
+  ```plaintext
+  JUCE\modules
+  ```
+- Open `AudioFilePlayer.jucer` in Projucer, select the Xcode exporter, and build it.
+
+---
+
+#### 6. Set Up AudioPluginHost
+*(Video reference: [15:25](https://youtu.be/Mo0Oco3Vimo?si=-IKkPU83JfS8Av58&t=925))*
+- Navigate to the JUCE AudioPluginHost directory:
+  ```plaintext
+  JUCE/extras/AudioPluginHost/
+  ```
+- Open `AudioPluginHost.jucer` in Projucer, select the Xcode exporter, and build the solution.
+
+---
+
+#### 7. Configure the PeakRMSCompressorWorkbench Project
+*(Video reference: [15:50](https://youtu.be/Mo0Oco3Vimo?si=n3LgqH16tZhT7d0j&t=950))*
+- Navigate to your `PeakRMSCompressorWorkbench` directory.
+- Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
+- In Xcode:
+  - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
+  - Go to the **Run** section, click on **Executables** and select **other**.
+  - Select:
+    ```plaintext
+    JUCE\extras\AudioPluginHost\Builds\MacOS\builds\Debug\AudioPluginHost.app
+    ```
+
+---
+
+#### 8. Test the Project
+*(Video reference: [16:26](https://youtu.be/Mo0Oco3Vimo?si=kwUowT6avbCAgVW0&t=986))*
+- Build and run the project.
+- In **AudioPluginHost**:
+  - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
+  - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
+  - Save the configuration as a filter graph file:
+    ```plaintext
+    PeakRMSCompressorWorkbench\PeakRMSCompressorWorkbench.filtergraph
+    ```
+
+---
+
 ## Notes
+- Make sure the Projucer **Global Paths** are correctly set to you **JUCE/modules** directory.
 - Make sure the **AudioPluginHost.exe** path is correctly set in the project properties.
-- If you encounter issues with VST scanning, ensure that the VST3 folder permissions are correctly configured.
+- If you encounter issues with VST scanning (on Windows), ensure that the VST3 folder permissions are correctly configured.
 
 ---
 
