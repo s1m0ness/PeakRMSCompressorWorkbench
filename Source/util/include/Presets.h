@@ -77,7 +77,14 @@ namespace Preset {
     //    { -23.0f, 3.0f, 25.0f, 170.0f, 2.0f, 0.0f }  // RMS
     //};
 
-    const std::initializer_list<PresetData> AllPresets = { Drums, Bass, Guitar, Vocals, FullMix }; // add new presets to the list
+    // add new presets to the list
+    const std::initializer_list<PresetData> AllPresets = { 
+        Drums, 
+        Bass, 
+        Guitar, 
+        Vocals, 
+        FullMix 
+    };
 }
 
 struct PresetStruct {
