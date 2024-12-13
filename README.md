@@ -90,12 +90,11 @@ Run the `setup.sh` script located in the repository root to ensure `Config.h` st
   ```plaintext
   AudioFilePlayerPlugin\
   ```
-- Right-click on AudioFilePlayer.jucer and select Open in Program.
-- Navigate to:
+- Right-click on AudioFilePlayer.jucer and select Open in Program and navigate to:
 - ```plaintext
   JUCE\extras\Projucer
   ```
-  and select Projucer.jucer.
+  and select Projucer.jucer file.
 - Once the project opens in Projucer, click Visual Studio to export and build the solution.
 ---
 
