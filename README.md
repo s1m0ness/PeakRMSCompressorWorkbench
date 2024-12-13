@@ -17,7 +17,7 @@ This application was developed as part of the bachelor's thesis titled *Experime
 
 ### Output Path Configuration
 - The export metrics functionality saves the computed metrics as a `.txt` file. The default export directory is specified in the **`Config.h`** file located in:
-`Source\util\include\Config.h`
+  `util/include/Config.h`
 
 - **Windows Default Output Path**: 
   `C:\Users\Public\Documents`
@@ -25,12 +25,44 @@ This application was developed as part of the bachelor's thesis titled *Experime
 - **MacOS Default Output Path**: 
   `/Users/Shared/`
   
-  In the output directory, the metrics files are saved under the `\PeakRMSCompressorWorkbench_testing_results` folder.
+  In the output directory, the metrics files are saved under the `/PeakRMSCompressorWorkbench_testing_results` folder.
 
 - **Compressed Files**:
   In `Config.h`, you can configure whether the compressed audio files should also be saved alongside the metrics. By default, this option is set to **false**.
 
 To customize the output behavior, update the appropriate parameters in the **`Config.h`** file before running the application.
+
+### Adding a New Preset to `Presets.h`
+
+To add a new preset:
+
+1. **Define the Preset**:
+   - Open `util/include/Presets.h`.
+   - Add a new `PresetData` entry inside the `Presets` namespace.
+
+     Example:
+     ```cpp
+     constexpr PresetData Piano = {
+         6, "Piano",
+         { -22.0f, 3.5f, 15.0f, 90.0f, 1.5f, 0.0f }, // Peak
+         { -24.0f, 3.8f, 20.0f, 120.0f, 1.8f, 0.0f } // RMS
+     };
+     ```
+
+2. **Add to the Preset List**:
+   - Add the new preset to `AllPresets`:
+     ```cpp
+     constexpr auto AllPresets = std::array{
+         Drums, Bass, Guitar, Vocals, FullMix, Piano
+     };
+     ```
+
+3. **Save and Rebuild**:
+   - Save `Presets.h` and rebuild your project.
+
+**Notes**:
+- Ensure the `id` is unique.
+- Use valid parameter ranges (defined in `util/include/Constants.h`).
 
 ---
 
