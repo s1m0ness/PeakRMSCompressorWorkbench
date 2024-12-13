@@ -45,6 +45,8 @@ To set up and run this project, ensure you have the following installed:
 2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback.
 3. [Visual Studio Community Edition 2022](https://visualstudio.microsoft.com/): The IDE for building the project.
 
+- The project is **not** compatible with Visual Studio 2019 version.
+
 ---
 
 ### Step-by-Step Setup Guide
@@ -134,7 +136,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 #### 8. Configure the PeakRMSCompressorWorkbench Project
 *(Video reference: [36:06](https://youtu.be/Mo0Oco3Vimo?si=rt7h6I_aILSQKOo4&t=2166))*
 - Navigate to your `PeakRMSCompressorWorkbench` directory.
-- Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
+- Open `PeakRMSCompressorWorkbench.projucer` in Projucer and open the project in Visual Studio.
 - In Visual Studio:
   - Right-click on `PeakRMSCompressorWorkbench_VST3` in Solution Explorer and select **Properties**.
   - Go to **Configuration Properties > Debugging**.
@@ -245,7 +247,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 #### 7. Configure the PeakRMSCompressorWorkbench Project
 *(Video reference: [15:50](https://youtu.be/Mo0Oco3Vimo?si=n3LgqH16tZhT7d0j&t=950))*
 - Navigate to your `PeakRMSCompressorWorkbench` directory.
-- Open `PeakRMSCompressorWorkbench.projucer` in Projucer.
+- Open `PeakRMSCompressorWorkbench.projucer` in Projucer and open in Xcode.
 - In Xcode:
   - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
   - Go to the **Run** section, click on **Executables**, select **Other...** and navigate to:
