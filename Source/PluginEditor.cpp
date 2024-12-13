@@ -344,7 +344,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::populatePresetComboBox()
 {
     presetComboBox.clear(); // Clear existing items
 
-    for (const auto& [presetId, preset] : PresetParameters) {
+    for (const auto& [presetId, preset] : audioProcessor.PresetParameters) {
         presetComboBox.addItem(preset.name, presetId); // Use name and id
     }
     presetComboBox.setSelectedId(0, juce::dontSendNotification); // Default to "None"

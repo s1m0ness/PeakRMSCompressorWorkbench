@@ -161,6 +161,8 @@ void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, 
     compressor.setRMSRelease(250.0f);    
     compressor.setRMSKnee(0.0f);   
     compressor.setRMSMakeup(0.0f);
+
+    PresetParameters = createPresetParameters();
 }
 
 void PeakRMSCompressorWorkbenchAudioProcessor::releaseResources()
@@ -398,8 +400,35 @@ void PeakRMSCompressorWorkbenchAudioProcessor::updateCompressionMode(bool isRMSM
     }
 }
 
-// APPLYING PRESETS
+// LOADING AND APPLYING PRESETS
 //==============================================================================
+
+std::map<int, PresetStruct>  PeakRMSCompressorWorkbenchAudioProcessor::createPresetParameters() {
+    std::map<int, PresetStruct> parameters;
+
+    // Populate the parameters map dynamically
+    for (const auto& preset : Preset::AllPresets) {
+        parameters[preset.id] = {
+            preset.name,
+            {
+                {"peak_threshold", preset.peak.threshold},
+                {"peak_ratio", preset.peak.ratio},
+                {"peak_attack", preset.peak.attack},
+                {"peak_release", preset.peak.release},
+                {"peak_knee", preset.peak.knee},
+                {"peak_makeup", preset.peak.makeup},
+                {"rms_threshold", preset.rms.threshold},
+                {"rms_ratio", preset.rms.ratio},
+                {"rms_attack", preset.rms.attack},
+                {"rms_release", preset.rms.release},
+                {"rms_knee", preset.rms.knee},
+                {"rms_makeup", preset.rms.makeup}
+            }
+        };
+    }
+    return parameters;
+}
+
 void PeakRMSCompressorWorkbenchAudioProcessor::applyPreset(int presetId)
 {
     // Check if the given presetId exists in the PresetParameters map

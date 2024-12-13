@@ -192,14 +192,16 @@ public:
 
     double progress{ 0.0 }; // Thread-safe progress value
 
-    public:
-        float getParameterValue(const juce::String& paramID) const {
-            if (auto* param = parameters.getRawParameterValue(paramID)) {
-                return param->load();
-            }
-            jassertfalse; // Invalid parameter ID
-            return 0.0f;
+    float getParameterValue(const juce::String& paramID) const {
+        if (auto* param = parameters.getRawParameterValue(paramID)) {
+            return param->load();
         }
+        jassertfalse; // Invalid parameter ID
+        return 0.0f;
+    }
+
+    std::map<int, PresetStruct> createPresetParameters();
+    std::map<int, PresetStruct> PresetParameters;
 
 private:
     juce::File createUniqueFile(const juce::String& label, const juce::String& extension);
