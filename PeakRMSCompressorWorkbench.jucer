@@ -33,18 +33,13 @@
       <GROUP id="{6E3F405A-0BE9-F4A3-7BF3-4BB987D43A70}" name="include">
         <FILE id="EbvHCl" name="Compressor.h" compile="0" resource="0" file="Source/dsp/include/Compressor.h"/>
         <FILE id="MRdktt" name="GainComputer.h" compile="0" resource="0" file="Source/dsp/include/GainComputer.h"/>
+        <FILE id="XeRTm5" name="LevelDetector.h" compile="0" resource="0" file="Source/dsp/include/LevelDetector.h"/>
         <FILE id="BxfqLb" name="LevelEnvelopeFollower.h" compile="0" resource="0"
               file="Source/dsp/include/LevelEnvelopeFollower.h"/>
-        <FILE id="z1EYP7" name="PeakLevelDetector.h" compile="0" resource="0"
-              file="Source/dsp/include/PeakLevelDetector.h"/>
-        <FILE id="vK0HPc" name="RMSLevelDetector.h" compile="0" resource="0"
-              file="Source/dsp/include/RMSLevelDetector.h"/>
       </GROUP>
-      <FILE id="e7S7xN" name="PeakLevelDetector.cpp" compile="1" resource="0"
-            file="Source/dsp/PeakLevelDetector.cpp"/>
-      <FILE id="ntynfZ" name="RMSLevelDetector.cpp" compile="1" resource="0"
-            file="Source/dsp/RMSLevelDetector.cpp"/>
       <FILE id="S7iia8" name="Compressor.cpp" compile="1" resource="0" file="Source/dsp/Compressor.cpp"/>
+      <FILE id="YGJd5D" name="LevelDetector.cpp" compile="1" resource="0"
+            file="Source/dsp/LevelDetector.cpp"/>
       <FILE id="IOgwRQ" name="GainComputer.cpp" compile="1" resource="0"
             file="Source/dsp/GainComputer.cpp"/>
       <FILE id="EfsKB8" name="LevelEnvelopeFollower.cpp" compile="1" resource="0"

@@ -359,8 +359,11 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
         return;
     }
 
-    muteButton.setToggleState(true, juce::dontSendNotification);
-    audioProcessor.isMuted = true;
+    alreadyMuted = muteButton.getToggleState();
+    if (!alreadyMuted) {
+        muteButton.setToggleState(true, juce::dontSendNotification);
+        audioProcessor.isMuted = true;
+    }
 
     // Call loadFile directly on the main thread
     audioProcessor.loadFile();
@@ -369,11 +372,13 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
             juce::AlertWindow::WarningIcon,
             "Error",
             "No valid file selected. Please try again.");
-
-        muteButton.setToggleState(false, juce::dontSendNotification);
-        audioProcessor.isMuted = false;
+        if (!alreadyMuted) {
+            muteButton.setToggleState(false, juce::dontSendNotification);
+            audioProcessor.isMuted = false;
+        }
         return;
     }
+
 
     // Lock the UI to indicate loading
     juce::MessageManager::callAsync([this]() {
@@ -397,8 +402,11 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
         juce::MessageManager::callAsync([this]() {
             powerButton.setToggleState(true, juce::dontSendNotification);
             powerButton.setEnabled(true);
-            muteButton.setToggleState(false, juce::dontSendNotification);
-            audioProcessor.isMuted = false;
+            audioProcessor.isOn = true;
+            if (!alreadyMuted) {
+                muteButton.setToggleState(false, juce::dontSendNotification);
+                audioProcessor.isMuted = false;
+            }
             updateParameterState();
             audioProcessor.compressor.setPower(false);
             progressBar.setVisible(false);

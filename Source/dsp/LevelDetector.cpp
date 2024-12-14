@@ -9,7 +9,7 @@
  * - Applying peak-based detector smoothing to audio samples.
  *
  * NOTE: This implementation directly reuses parts of the original CTAGDRC code.
- * 
+ *
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.
  *
@@ -27,10 +27,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/PeakLevelDetector.h"
+#include "include/LevelDetector.h"
 #include "../JuceLibraryCode/JuceHeader.h"
 
-void PeakLevelDetector::prepare(const double& fs)
+void LevelDetector::prepare(const double& fs)
 {
     sampleRate = fs;
 
@@ -40,7 +40,7 @@ void PeakLevelDetector::prepare(const double& fs)
     state02 = 0.0;
 }
 
-void PeakLevelDetector::setAttack(const double& attack)
+void LevelDetector::setAttack(const double& attack)
 {
     if (attack != attackTimeInSeconds)
     {
@@ -49,7 +49,7 @@ void PeakLevelDetector::setAttack(const double& attack)
     }
 }
 
-void PeakLevelDetector::setRelease(const double& release)
+void LevelDetector::setRelease(const double& release)
 {
     if (release != releaseTimeInSeconds)
     {
@@ -59,27 +59,27 @@ void PeakLevelDetector::setRelease(const double& release)
 }
 
 
-double PeakLevelDetector::getAttack()
+double LevelDetector::getAttack()
 {
     return attackTimeInSeconds;
 }
 
-double PeakLevelDetector::getRelease()
+double LevelDetector::getRelease()
 {
     return releaseTimeInSeconds;
 }
 
-double PeakLevelDetector::getAlphaAttack()
+double LevelDetector::getAlphaAttack()
 {
     return alphaAttack;
 }
 
-double PeakLevelDetector::getAlphaRelease()
+double LevelDetector::getAlphaRelease()
 {
     return alphaRelease;
 }
 
-float PeakLevelDetector::processPeakBranched(const float& in)
+float LevelDetector::processPeakBranched(const float& in)
 {
     //Smooth branched peak detector
     if (in < state01) // since peak detector is placed after gain computer, the input values are negative
@@ -90,11 +90,32 @@ float PeakLevelDetector::processPeakBranched(const float& in)
     return static_cast<float>(state01); //y_L
 }
 
-
-void PeakLevelDetector::applyPeakDetector(float* src, int numSamples)
+float LevelDetector::processRMSBranched(const float& in)
 {
-    // Apply smoothing to src buffer
+    float inSquared = in * in;
+
+    /*Smooth branched rms detector*/
+    if (inSquared > state01)
+        state01 = alphaAttack * state01 + (1 - alphaAttack) * inSquared;
+    else
+        state01 = alphaRelease * state01 + (1 - alphaRelease) * inSquared;
+
+    return static_cast<float>(state01); //y_L
+}
+
+void LevelDetector::applyPeakDetector(float* src, int numSamples)
+{
+    // Apply smoothing for peak detection to src buffer
     for (int i = 0; i < numSamples; ++i)
         src[i] = processPeakBranched(src[i]);
+}
 
+void LevelDetector::applyRMSDetector(float* src, int numSamples)
+{
+    // Apply smoothing for rms detection to src buffer
+    for (int i = 0; i < numSamples; ++i) {
+        src[i] = std::sqrtf(processRMSBranched(src[i]));
+        // Adjust RMS values to make up for time constants scaling
+        src[i] *= (1 / std::sqrtf(2.0f));
+    }
 }

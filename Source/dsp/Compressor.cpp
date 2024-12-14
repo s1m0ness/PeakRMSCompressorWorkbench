@@ -32,7 +32,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../Source/dsp/include/Compressor.h"
+#include "include/Compressor.h"
 #include <sstream>
 
 Compressor::~Compressor()
@@ -61,7 +61,7 @@ void Compressor::setRMSMode(bool newMode)
     RMSModeEnabled = newMode;
 }
 
-// PEAK
+// PEAK PARAMS
 void Compressor::setPeakThreshold(float thresholdInDb)
 {
     peakGainComputer.setThreshold(thresholdInDb);
@@ -92,7 +92,7 @@ void Compressor::setPeakMakeup(float makeupGainInDb)
     peakMakeup = makeupGainInDb;
 }
 
-// RMS
+// RMS PARAMS
 void Compressor::setRMSThreshold(float thresholdInDb)
 {
     rmsGainComputer.setThreshold(thresholdInDb);
@@ -195,7 +195,7 @@ void Compressor::applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSa
 {
     setSidechainSignal(buffer, numSamples);
     
-    // Use smoothig detector filter for rms level computation in linear domain
+    // Use smoothig detector filter for rms level computation in linear domain (before log conversion)
     rmsDetector.applyRMSDetector(rawSidechainSignal, numSamples); // RMS-based level detection stage
 
     // Compute attenuation - converts side-chain signal from linear to logarithmic domain

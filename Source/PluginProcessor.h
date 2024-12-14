@@ -178,6 +178,8 @@ public:
     void saveMetricsToFile(const juce::String& metricsContent, const juce::File& metricsFile);
 
     //==============================================================================
+    juce::AudioProcessorValueTreeState parameters;
+    
     std::atomic<float> gainReduction;
     std::atomic<float> currentInput;
     std::atomic<float> currentOutput;
@@ -192,6 +194,7 @@ public:
 
     double progress{ 0.0 }; // Thread-safe progress value
 
+    // Getter for acquiring preset parameter values 
     float getParameterValue(const juce::String& paramID) const {
         if (auto* param = parameters.getRawParameterValue(paramID)) {
             return param->load();
@@ -210,7 +213,6 @@ private:
     juce::String formatParameterValues(bool isRMS);
 
 
-    juce::AudioProcessorValueTreeState parameters;
     //==============================================================================
     LevelEnvelopeFollower inLevelFollower;
     LevelEnvelopeFollower outLevelFollower;

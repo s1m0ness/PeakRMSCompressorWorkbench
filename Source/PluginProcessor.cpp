@@ -155,12 +155,12 @@ void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, 
     metrics.prepare(sampleRate);
 
     // Initialize default RMS parameters, since they can have random values if the rms switch wasn't toggled.
-    compressor.setRMSThreshold(0.0f); 
+    /*compressor.setRMSThreshold(0.0f); 
     compressor.setRMSRatio(3.0f);         
     compressor.setRMSAttack(50.0f);       
     compressor.setRMSRelease(250.0f);    
     compressor.setRMSKnee(0.0f);   
-    compressor.setRMSMakeup(0.0f);
+    compressor.setRMSMakeup(0.0f);*/
 
     PresetParameters = createPresetParameters();
 }
@@ -201,16 +201,11 @@ bool PeakRMSCompressorWorkbenchAudioProcessor::isBusesLayoutSupported (const Bus
 //==============================================================================
 void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    if (isMuted) {
-        buffer.clear(); // Silence the audio
-        return;
-    }
-
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     const auto numSamples = buffer.getNumSamples();
-    
+
     // Clear input buffer
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
@@ -229,6 +224,11 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<fl
     outLevelFollower.updatePeak(buffer.getArrayOfReadPointers(), totalNumInputChannels, numSamples);
     currentOutput = Decibels::gainToDecibels(outLevelFollower.getPeak());
 
+    if (isMuted) {
+        buffer.clear(); // Silence the audio
+        return;
+
+    }
 }
 
 //==============================================================================
@@ -358,9 +358,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAu
 
 void PeakRMSCompressorWorkbenchAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
-    if (parameterID == "power") compressor.setPower(!static_cast<bool>(newValue));
+    if (parameterID == "power")   compressor.setPower(!static_cast<bool>(newValue));
     else if (parameterID == "mute") isMuted = static_cast<bool>(newValue);
-    else if (parameterID == "isRMS") updateCompressionMode(static_cast<bool>(newValue));
+    /*else if (parameterID == "isRMS") updateCompressionMode(static_cast<bool>(newValue));*/
 
     // Peak parameters
     else if (parameterID == "peak_threshold") compressor.setPeakThreshold(newValue);

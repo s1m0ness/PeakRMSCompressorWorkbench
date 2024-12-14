@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Implementation based on the CTAGDRC project:
  * https://github.com/p-hlp/CTAGDRC
  *
@@ -33,8 +33,7 @@
  */
 
 #pragma once
-#include "PeakLevelDetector.h"
-#include "RMSLevelDetector.h"
+#include "LevelDetector.h"
 #include "GainComputer.h"
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -130,8 +129,8 @@ private:
     juce::AudioBuffer<float> peakGainReduction;
     juce::AudioBuffer<float> rmsGainReduction;
 
-    PeakLevelDetector peakDetector;
-    RMSLevelDetector rmsDetector;
+    LevelDetector peakDetector;
+    LevelDetector rmsDetector;
     
     GainComputer peakGainComputer;
     GainComputer rmsGainComputer;

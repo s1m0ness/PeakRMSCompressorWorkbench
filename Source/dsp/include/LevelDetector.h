@@ -5,11 +5,11 @@
  * This class implements an RMS Level Detector used in audio dynamic range processing.
  *
  * This file handles:
- *  - Attack and release times adjustments controlling the degree of smoothing
- * - Applying RMS-based detector smoothing to audio samples.
+ * - Attack and release times adjustments controlling the degree of smoothing
+ * - Applying peak-based detector smoothing to audio samples.
  *
  * NOTE: This implementation directly reuses parts of the original CTAGDRC code.
- * 
+ *
  * License:
  * This file is part of the PeakRMSCompressorWorkbench project.
  *
@@ -29,10 +29,10 @@
 
 #pragma once
 
-class RMSLevelDetector
+class LevelDetector
 {
 public:
-    RMSLevelDetector() = default;
+    LevelDetector() = default;
 
     // Prepares LevelDetector with a ProcessSpec-Object containing samplerate, blocksize and number of channels
     void prepare(const double& fs);
@@ -56,18 +56,22 @@ public:
     double getAlphaRelease();
 
     // Processes a sample with smooth branched peak detector
-    float processRMSBranched(const float&);
+    float processPeakBranched(const float&);
 
-    // Applies ballistics to given buffer
-    void applyRMSDetector(float*, int);
+    // Processes a sample with smooth branched rms detector
+    float processRMSBranched(const float& in);
 
+    // Applies smoothing detector filter for peak level detection to given buffer
+    void applyPeakDetector(float*, int);
+
+    // Applies smoothing detector filter for rms level detection to given buffer
+    void applyRMSDetector(float* src, int numSamples);
 
 private:
-
     double attackTimeInSeconds{ 0.01 }, alphaAttack{ 0.0 };
     double releaseTimeInSeconds{ 0.14 }, alphaRelease{ 0.0 };
     double state01{ 0.0 }, state02{ 0.0 };
     double sampleRate{ 0.0 };
-
-    double inSquared{ 0.0 };
 };
+
+
