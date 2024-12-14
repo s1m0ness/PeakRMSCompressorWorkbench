@@ -146,7 +146,8 @@ void PeakRMSCompressorWorkbenchAudioProcessor::changeProgramName (int index, con
 //==============================================================================
 void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    compressor.prepare({ sampleRate, static_cast<uint32>(samplesPerBlock), 2 });
+    peakCompressor.prepare({ sampleRate, static_cast<uint32>(samplesPerBlock), 2 });
+    rmsCompressor.prepare({ sampleRate, static_cast<uint32>(samplesPerBlock), 2 });
     
     inLevelFollower.prepare(sampleRate);
     outLevelFollower.prepare(sampleRate);
@@ -206,11 +207,17 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<fl
     inLevelFollower.updatePeak(buffer.getArrayOfReadPointers(), totalNumInputChannels, numSamples);
     currentInput = Decibels::gainToDecibels(inLevelFollower.getPeak());
 
-    // Apply compression
-    compressor.process(buffer);
-
-    // Get max. gain reduction value for gain reduction metering
-    gainReduction = compressor.getMaxGainReduction();
+    if (!isRMSMode) {
+        // Apply peak compression
+        peakCompressor.process(buffer, isRMSMode);
+        // Get max. gain reduction for peak value for gain reduction metering
+        gainReduction = peakCompressor.getMaxGainReduction();
+    } else {
+        // Apply rms compression
+        rmsCompressor.process(buffer, isRMSMode);
+        // Get max. gain reduction value for rms for gain reduction metering
+        gainReduction = rmsCompressor.getMaxGainReduction();
+    }
 
     // Update output peak metering
     outLevelFollower.updatePeak(buffer.getArrayOfReadPointers(), totalNumInputChannels, numSamples);
@@ -350,44 +357,46 @@ juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAu
 
 void PeakRMSCompressorWorkbenchAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
-    if (parameterID == "power") compressor.setPower(!static_cast<bool>(newValue));
+    if (parameterID == "power") {
+        peakCompressor.setPower(!static_cast<bool>(newValue));
+        rmsCompressor.setPower(!static_cast<bool>(newValue));
+    }
     else if (parameterID == "mute") isMuted = static_cast<bool>(newValue);
+    else if (parameterID == "isRMS") isRMSMode = static_cast<bool>(newValue);
 
     // Peak parameters
-    else if (parameterID == "peak_threshold") compressor.setPeakThreshold(newValue);
-    else if (parameterID == "peak_ratio") compressor.setPeakRatio(newValue);
-    else if (parameterID == "peak_knee") compressor.setPeakKnee(newValue);
-    else if (parameterID == "peak_attack") compressor.setPeakAttack(newValue);
-    else if (parameterID == "peak_release") compressor.setPeakRelease(newValue);
-    else if (parameterID == "peak_makeup") compressor.setPeakMakeup(newValue);
+    else if (parameterID == "peak_threshold") peakCompressor.setThreshold(newValue);
+    else if (parameterID == "peak_ratio") peakCompressor.setRatio(newValue);
+    else if (parameterID == "peak_knee") peakCompressor.setKnee(newValue);
+    else if (parameterID == "peak_attack") peakCompressor.setAttack(newValue);
+    else if (parameterID == "peak_release") peakCompressor.setRelease(newValue);
+    else if (parameterID == "peak_makeup") peakCompressor.setMakeup(newValue);
 
     // RMS parameters
-    else if (parameterID == "rms_threshold") compressor.setRMSThreshold(newValue);
-    else if (parameterID == "rms_ratio") compressor.setRMSRatio(newValue);
-    else if (parameterID == "rms_knee") compressor.setRMSKnee(newValue);
-    else if (parameterID == "rms_attack") compressor.setRMSAttack(newValue);
-    else if (parameterID == "rms_release") compressor.setRMSRelease(newValue);
-    else if (parameterID == "rms_makeup") compressor.setRMSMakeup(newValue);
+    else if (parameterID == "rms_threshold") rmsCompressor.setThreshold(newValue);
+    else if (parameterID == "rms_ratio") rmsCompressor.setRatio(newValue);
+    else if (parameterID == "rms_knee") rmsCompressor.setKnee(newValue);
+    else if (parameterID == "rms_attack") rmsCompressor.setAttack(newValue);
+    else if (parameterID == "rms_release") rmsCompressor.setRelease(newValue);
+    else if (parameterID == "rms_makeup") rmsCompressor.setMakeup(newValue);
 }
 
 void PeakRMSCompressorWorkbenchAudioProcessor::updateCompressionMode(bool isRMSMode)
 {
-    compressor.setRMSMode(isRMSMode); // Update mode
-
     if (isRMSMode) {
-        compressor.setRMSThreshold(*parameters.getRawParameterValue("rms_threshold"));
-        compressor.setRMSRatio(*parameters.getRawParameterValue("rms_ratio"));
-        compressor.setRMSAttack(*parameters.getRawParameterValue("rms_attack"));
-        compressor.setRMSRelease(*parameters.getRawParameterValue("rms_release"));
-        compressor.setRMSKnee(*parameters.getRawParameterValue("rms_knee"));
-        compressor.setRMSMakeup(*parameters.getRawParameterValue("rms_makeup"));
+        rmsCompressor.setThreshold(*parameters.getRawParameterValue("rms_threshold"));
+        rmsCompressor.setRatio(*parameters.getRawParameterValue("rms_ratio"));
+        rmsCompressor.setAttack(*parameters.getRawParameterValue("rms_attack"));
+        rmsCompressor.setRelease(*parameters.getRawParameterValue("rms_release"));
+        rmsCompressor.setKnee(*parameters.getRawParameterValue("rms_knee"));
+        rmsCompressor.setMakeup(*parameters.getRawParameterValue("rms_makeup"));
     } else {
-        compressor.setPeakThreshold(*parameters.getRawParameterValue("peak_threshold"));
-        compressor.setPeakRatio(*parameters.getRawParameterValue("peak_ratio"));
-        compressor.setPeakAttack(*parameters.getRawParameterValue("peak_attack"));
-        compressor.setPeakRelease(*parameters.getRawParameterValue("peak_release"));
-        compressor.setPeakKnee(*parameters.getRawParameterValue("peak_knee"));
-        compressor.setPeakMakeup(*parameters.getRawParameterValue("peak_makeup"));
+        peakCompressor.setThreshold(*parameters.getRawParameterValue("peak_threshold"));
+        peakCompressor.setRatio(*parameters.getRawParameterValue("peak_ratio"));
+        peakCompressor.setAttack(*parameters.getRawParameterValue("peak_attack"));
+        peakCompressor.setRelease(*parameters.getRawParameterValue("peak_release"));
+        peakCompressor.setKnee(*parameters.getRawParameterValue("peak_knee"));
+        peakCompressor.setMakeup(*parameters.getRawParameterValue("peak_makeup"));
     }
 }
 
@@ -550,11 +559,11 @@ void PeakRMSCompressorWorkbenchAudioProcessor::compressEntireSignal()
     rmsCompressedSignal.makeCopyOf(uncompressedSignal);
 
     // Process the buffers in chunks to reduce memory usage
-    processBufferInChunks(peakGainReductionSignal, peakCompressedSignal, 1024, false); // Chunk size of 1024 samples
-    processBufferInChunks(rmsGainReductionSignal, rmsCompressedSignal, 1024, true);
+    processBufferInChunks(peakGainReductionSignal, peakCompressedSignal, 1024, false, peakCompressor); // Chunk size of 1024 samples
+    processBufferInChunks(rmsGainReductionSignal, rmsCompressedSignal, 1024, true, rmsCompressor);
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS)
+void PeakRMSCompressorWorkbenchAudioProcessor::processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS, Compressor compressor)
 {
     const int numSamples = buffer.getNumSamples();
     const int numChannels = buffer.getNumChannels();
@@ -579,16 +588,13 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBufferInChunks(juce::Audio
         // Apply either peak or rms compression to the chunk
         if (isRMS) {
             compressor.applyRMSCompression(chunkBuffer, numSamplesToProcess, numChannels, true);
-            // Save rms gain reduction signal 
-            for (int channel = 0; channel < numChannels; ++channel) {
-                grBuffer.copyFrom(channel, startSample, compressor.getRMSGainReductionSignal(), channel, 0, numSamplesToProcess);
-            }
         } else {
             compressor.applyPeakCompression(chunkBuffer, numSamplesToProcess, numChannels, true);
-            // Save peak gain reduction signal
-            for (int channel = 0; channel < numChannels; ++channel) {
-                grBuffer.copyFrom(channel, startSample, compressor.getPeakGainReductionSignal(), channel, 0, numSamplesToProcess);
-            }
+        }
+
+        // save gainReductionSignal
+        for (int channel = 0; channel < numChannels; ++channel) {
+            grBuffer.copyFrom(channel, startSample, compressor.getGainReductionSignal(), channel, 0, numSamplesToProcess);
         }
 
         // Copy processed chunk back into the main buffer

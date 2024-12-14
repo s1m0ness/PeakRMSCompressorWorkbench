@@ -157,7 +157,7 @@ public:
     * @param chunkSize Number of samples to process per chunk.
     * @param isRMS Flag to specify whether RMS compression is applied.
     */
-    void processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS);
+    void processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS, Compressor compressor);
 
     /**
     * Saves an audio buffer to a .wav file.
@@ -184,8 +184,10 @@ public:
     std::atomic<float> currentInput;
     std::atomic<float> currentOutput;
 
-    Compressor compressor;
+    Compressor peakCompressor;
+    Compressor rmsCompressor;
 
+    bool isRMSMode{ false };
     bool isMuted{ false };
 
     std::atomic<bool> isProcessing{ false };

@@ -42,8 +42,7 @@ Compressor::~Compressor()
 void Compressor::prepare(const juce::dsp::ProcessSpec& ps)
 {
 	procSpec = ps;
-    peakDetector.prepare(ps.sampleRate);
-    rmsDetector.prepare(ps.sampleRate);
+    levelDetector.prepare(ps.sampleRate);
 	originalSignal.setSize(2, ps.maximumBlockSize);
 	sidechainSignal.resize(ps.maximumBlockSize, 0.0f);
 	rawSidechainSignal = sidechainSignal.data();
@@ -56,82 +55,42 @@ void Compressor::setPower(bool newPower)
     bypassed = newPower;
 }
 
-void Compressor::setRMSMode(bool newMode)
-{
-    RMSModeEnabled = newMode;
-}
-
 // PEAK PARAMS
-void Compressor::setPeakThreshold(float thresholdInDb)
+void Compressor::setThreshold(float thresholdInDb)
 {
-    peakGainComputer.setThreshold(thresholdInDb);
+    gainComputer.setThreshold(thresholdInDb);
 }
 
-void Compressor::setPeakRatio(float rat)
+void Compressor::setRatio(float rat)
 {
-    peakGainComputer.setRatio(rat);
+    gainComputer.setRatio(rat);
 }
 
-void Compressor::setPeakAttack(float attackTimeInMs)
+void Compressor::setAttack(float attackTimeInMs)
 {
-    peakDetector.setAttack(attackTimeInMs * 0.001);
+    levelDetector.setAttack(attackTimeInMs * 0.001);
 }
 
-void Compressor::setPeakRelease(float releaseTimeInMs)
+void Compressor::setRelease(float releaseTimeInMs)
 {
-    peakDetector.setRelease(releaseTimeInMs * 0.001);
+    levelDetector.setRelease(releaseTimeInMs * 0.001);
 }
 
-void Compressor::setPeakKnee(float kneeInDb)
+void Compressor::setKnee(float kneeInDb)
 {
-    peakGainComputer.setKnee(kneeInDb);
+    gainComputer.setKnee(kneeInDb);
 }
 
-void Compressor::setPeakMakeup(float makeupGainInDb)
+void Compressor::setMakeup(float makeupGainInDb)
 {
-    peakMakeup = makeupGainInDb;
+    makeup = makeupGainInDb;
 }
 
-// RMS PARAMS
-void Compressor::setRMSThreshold(float thresholdInDb)
-{
-    rmsGainComputer.setThreshold(thresholdInDb);
-}
-
-void Compressor::setRMSRatio(float rat)
-{
-    rmsGainComputer.setRatio(rat);
-}
-
-void Compressor::setRMSAttack(float attackTimeInMs)
-{
-    rmsDetector.setAttack(attackTimeInMs * 0.001);
-}
-
-void Compressor::setRMSRelease(float releaseTimeInMs)
-{
-    rmsDetector.setRelease(releaseTimeInMs * 0.001);
-}
-
-void Compressor::setRMSKnee(float kneeInDb)
-{
-    rmsGainComputer.setKnee(kneeInDb);
-}
-
-void Compressor::setRMSMakeup(float makeupGainInDb)
-{
-    rmsMakeup = makeupGainInDb;
-}
 
 //==============================================================================
-float Compressor::getPeakMakeup()
+float Compressor::getMakeup()
 {
-    return peakMakeup;
-}
-
-float Compressor::getRMSMakeup()
-{
-    return rmsMakeup;
+    return makeup;
 }
 
 double Compressor::getSampleRate()
@@ -144,19 +103,15 @@ float Compressor::getMaxGainReduction()
     return maxGainReduction;
 }
 
-juce::AudioBuffer<float> Compressor::getPeakGainReductionSignal()
+juce::AudioBuffer<float> Compressor::getGainReductionSignal()
 {
-    return peakGainReduction;
+    return gainReductionSignal;
 }
 
-juce::AudioBuffer<float> Compressor::getRMSGainReductionSignal()
-{
-    return rmsGainReduction;
-}
 
 // APPLY COMPRESSION
 //==============================================================================
-void Compressor::process(juce::AudioBuffer<float>& buffer)
+void Compressor::process(juce::AudioBuffer<float>& buffer, bool isRMSmode)
 {
     if (!bypassed) {
         const auto numSamples = buffer.getNumSamples();
@@ -166,7 +121,7 @@ void Compressor::process(juce::AudioBuffer<float>& buffer)
 
         jassert(numSamples == static_cast<int>(sidechainSignal.size()));
 
-        if (!RMSModeEnabled) {
+        if (!isRMSmode) {
             applyPeakCompression(buffer, numSamples, numChannels, false);
         } else {
             applyRMSCompression(buffer, numSamples, numChannels, false);
@@ -179,16 +134,16 @@ void Compressor::applyPeakCompression(juce::AudioBuffer<float>& buffer, int numS
     setSidechainSignal(buffer, numSamples);
 
     // Compute attenuation - converts side-chain signal from linear to logarithmic domain
-    peakGainComputer.applyCompressionToBuffer(rawSidechainSignal, numSamples); // Gain computer stage
+    gainComputer.applyCompressionToBuffer(rawSidechainSignal, numSamples); // Gain computer stage
     
     // Use smoothig detector filter for gain reduction - still logarithmic
-    peakDetector.applyPeakDetector(rawSidechainSignal, numSamples); // Peak-based level detection stage 
+    levelDetector.applyPeakDetector(rawSidechainSignal, numSamples); // Peak-based level detection stage 
 
     if (trackGR) { // for metrics extraction
-        saveGainReductionSignal(peakGainReduction, numSamples, numChannels);
+        saveGainReductionSignal(numSamples, numChannels);
     }
 
-    applyCompressionToInputSignal(buffer, numSamples, numChannels, getPeakMakeup());
+    applyCompressionToInputSignal(buffer, numSamples, numChannels, getMakeup());
 }
 
 void Compressor::applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, bool trackGR)
@@ -196,18 +151,16 @@ void Compressor::applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSa
     setSidechainSignal(buffer, numSamples);
     
     // Use smoothig detector filter for rms level computation in linear domain (before log conversion)
-    rmsDetector.applyRMSDetector(rawSidechainSignal, numSamples); // RMS-based level detection stage
+    levelDetector.applyRMSDetector(rawSidechainSignal, numSamples); // RMS-based level detection stage
 
     // Compute attenuation - converts side-chain signal from linear to logarithmic domain
-    rmsGainComputer.applyCompressionToBuffer(rawSidechainSignal, numSamples); // Gain computer stage
+    gainComputer.applyCompressionToBuffer(rawSidechainSignal, numSamples); // Gain computer stage
 
     if (trackGR) {
-        if (trackGR) {
-            saveGainReductionSignal(rmsGainReduction, numSamples, numChannels);
-        }
+        saveGainReductionSignal(numSamples, numChannels);
     }
 
-    applyCompressionToInputSignal(buffer, numSamples, numChannels, getRMSMakeup());
+    applyCompressionToInputSignal(buffer, numSamples, numChannels, getMakeup());
 }
 
 // AUDIO BUFFERS HANDLING FOR COMPRESSION AND LOG->LIN CONVERTER
@@ -261,7 +214,7 @@ void Compressor::applyInputGain(juce::AudioBuffer<float>& buffer, int numSamples
 
 // ADDITIONAL FUNCTIONS
 //==============================================================================
-void Compressor::saveGainReductionSignal(juce::AudioBuffer<float>& gainReductionSignal, int numSamples, int numChannels)
+void Compressor::saveGainReductionSignal(int numSamples, int numChannels)
 {
     gainReductionSignal.setSize(numChannels, numSamples, false, true, true);
     for (int channel = 0; channel < numChannels; ++channel) {

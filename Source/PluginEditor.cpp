@@ -385,7 +385,8 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
         powerButton.setToggleState(false, juce::dontSendNotification);
         powerButton.setEnabled(false);
         updateParameterState();
-        audioProcessor.compressor.setPower(true);
+        audioProcessor.peakCompressor.setPower(true);
+        audioProcessor.rmsCompressor.setPower(true);
         progressBar.setVisible(true);
         });
 
@@ -407,7 +408,8 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
                 audioProcessor.isMuted = false;
             }
             updateParameterState();
-            audioProcessor.compressor.setPower(false);
+            audioProcessor.peakCompressor.setPower(false);
+            audioProcessor.rmsCompressor.setPower(false);
             progressBar.setVisible(false);
 
             // Add the success popup window here

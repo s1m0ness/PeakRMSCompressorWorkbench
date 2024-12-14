@@ -49,30 +49,21 @@ public:
 
     //==============================================================================
     void setPower(bool);
-    void setRMSMode(bool);
-    void setPeakThreshold(float db);
-    void setPeakRatio(float db);
-    void setPeakAttack(float ms);
-    void setPeakRelease(float ms);
-    void setPeakKnee(float db);
-    void setPeakMakeup(float db);
-    void setRMSThreshold(float db);
-    void setRMSRatio(float db);
-    void setRMSAttack(float ms);
-    void setRMSRelease(float ms);
-    void setRMSKnee(float db);
-    void setRMSMakeup(float db);
+    void setThreshold(float db);
+    void setRatio(float db);
+    void setAttack(float ms);
+    void setRelease(float ms);
+    void setKnee(float db);
+    void setMakeup(float db);
 
     //==============================================================================
-    float getPeakMakeup();
-    float getRMSMakeup();
+    float getMakeup();
     double getSampleRate();
     float getMaxGainReduction();
-    juce::AudioBuffer<float> getPeakGainReductionSignal();
-    juce::AudioBuffer<float> getRMSGainReductionSignal();
+    juce::AudioBuffer<float> getGainReductionSignal();
 
     //==============================================================================
-    void process(juce::AudioBuffer<float>& buffer);
+    void process(juce::AudioBuffer<float>& buffer, bool isRMSmode);
 
     /*
     * Applies Peak-Based Compression to the input buffer.
@@ -115,8 +106,9 @@ private:
     void setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSamples);
     void applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, float makeup);
     void applyInputGain(juce::AudioBuffer<float>&, int);
-    
-    void saveGainReductionSignal(juce::AudioBuffer<float>& gainReductionSignal, int numSamples, int numChannels);
+
+    void saveGainReductionSignal(int numSamples, int numChannels);
+   
     void resetSizeSignals();
 
     //Directly initialize process spec to avoid debugging problems
@@ -126,20 +118,16 @@ private:
     std::vector<float> sidechainSignal;
     float* rawSidechainSignal{ nullptr };
 
-    juce::AudioBuffer<float> peakGainReduction;
-    juce::AudioBuffer<float> rmsGainReduction;
+    juce::AudioBuffer<float> gainReductionSignal;
 
-    LevelDetector peakDetector;
-    LevelDetector rmsDetector;
+    LevelDetector levelDetector;
     
-    GainComputer peakGainComputer;
-    GainComputer rmsGainComputer;
+    GainComputer gainComputer;
 
     bool RMSModeEnabled{ false };
     bool bypassed{ false };
     
-    float peakMakeup{ 0.0f };
-    float rmsMakeup{ 0.0f };
+    float makeup{ 0.0f };
     float maxGainReduction{ 0.0f };
     float input{ 0.0f };
     float prevInput{ 0.0f };
