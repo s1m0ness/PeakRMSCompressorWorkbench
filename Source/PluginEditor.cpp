@@ -402,7 +402,6 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
         juce::MessageManager::callAsync([this]() {
             powerButton.setToggleState(true, juce::dontSendNotification);
             powerButton.setEnabled(true);
-            audioProcessor.isOn = true;
             if (!alreadyMuted) {
                 muteButton.setToggleState(false, juce::dontSendNotification);
                 audioProcessor.isMuted = false;

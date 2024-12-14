@@ -154,14 +154,6 @@ void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, 
     outLevelFollower.setPeakDecay(0.3f);
     metrics.prepare(sampleRate);
 
-    // Initialize default RMS parameters, since they can have random values if the rms switch wasn't toggled.
-    /*compressor.setRMSThreshold(0.0f); 
-    compressor.setRMSRatio(3.0f);         
-    compressor.setRMSAttack(50.0f);       
-    compressor.setRMSRelease(250.0f);    
-    compressor.setRMSKnee(0.0f);   
-    compressor.setRMSMakeup(0.0f);*/
-
     PresetParameters = createPresetParameters();
 }
 
@@ -358,9 +350,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAu
 
 void PeakRMSCompressorWorkbenchAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
-    if (parameterID == "power")   compressor.setPower(!static_cast<bool>(newValue));
+    if (parameterID == "power") compressor.setPower(!static_cast<bool>(newValue));
     else if (parameterID == "mute") isMuted = static_cast<bool>(newValue);
-    /*else if (parameterID == "isRMS") updateCompressionMode(static_cast<bool>(newValue));*/
 
     // Peak parameters
     else if (parameterID == "peak_threshold") compressor.setPeakThreshold(newValue);
