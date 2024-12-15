@@ -52,7 +52,6 @@ PeakRMSCompressorWorkbenchAudioProcessor::PeakRMSCompressorWorkbenchAudioProcess
     parameters.addParameterListener("power", this);
     parameters.addParameterListener("mute", this);
     parameters.addParameterListener("isRMS", this);
-    //parameters.addParameterListener("inputgain", this);
 
     parameters.addParameterListener("peak_threshold", this);
     parameters.addParameterListener("peak_ratio", this);
@@ -612,7 +611,7 @@ void PeakRMSCompressorWorkbenchAudioProcessor::extractMetricsFromSignals()
     metrics.setRMSGainReductionSignal(&rmsGainReductionSignal);
     metrics.setRMSCompressedSignal(&rmsCompressedSignal);
 
-    metrics.extractMetrics(getParameterValue("peak_ratio"), getParameterValue("rms_ratio"));
+    metrics.extractMetrics(getParameterValue("peak_makeup"), getParameterValue("rms_makeup"));
 }
 
 void PeakRMSCompressorWorkbenchAudioProcessor::saveCompressedAudio()

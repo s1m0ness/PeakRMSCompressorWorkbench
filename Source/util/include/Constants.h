@@ -73,6 +73,6 @@ namespace Constants
 
         constexpr float makeupStart = -40.0f;
         constexpr float makeupEnd = 40.0f;
-        constexpr float makeupInterval = 0.1f;
+        constexpr float makeupInterval = 0.05f;
     }
 }

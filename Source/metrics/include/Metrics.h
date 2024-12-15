@@ -40,47 +40,73 @@ public:
     //==============================================================================
     struct CompressionMetrics
     {
-        /*float rmse = 0.0f;
-        float correlation = 0.0f;
-        float LRA = 0.0f;
-        float stdDevGR = 0.0f;
-        float compressionActivity = 0.0f;
-        float crestGR = 0.0f;
-        float transientImpact = 0.0f;
-        float rateOfChangeGR = 0.0f;
-        float gainReductionEnergy = 0.0f;
-        float ratioEfficiency = 0.0f;
-        float attackReleaeTime = 0.0f;
-        float temporalSmoothness = 0.0f;
-        float transientEnergyPreservation = 0.0f;*/
+        // Signals are in linear gain
+        juce::AudioBuffer<float>* signal = nullptr;
+        juce::AudioBuffer<float>* GRSignal = nullptr;
+        
+        char* signalName{ };
+        bool isCompressed{ false };
 
-        float meanSquare{ 0.0f };
+        float makeup{ 0.0f };
+
+        // Signal metrics
+        float meanEnergy{ 0.0f };
         float rms{ 0.0f };
         float peak{ 0.0f };
         float crestFactor{ 0.0f };
         float lufs{ 0.0f };
-        float dynamicRangeReduction{ 0.0f };
+        float lra{ 0.0f };
+
+        // Metrics for comparing uncompressed and compressed signals
+        float dynamicRangeReductionCrest{ 0.0f };
+        float dynamicRangeReductionLUFS{ 0.0f };
+        float dynamicRangeReductionLRA{ 0.0f };
+        float transientImpact{ 0.0f };
+        float transientEnergyPreservation{ 0.0f };
+        float harmonicDistortion{ 0.0f };
+        
+        // Gain reduction signal metrics
         float avgGR{ 0.0f };
         float maxGR{ 0.0f };
-        
-        char* signalName{ };
-        bool trackGR{ false };
-
+        float stdDevGR{ 0.0f };
+        float energyGR{ 0.0f };
+        float rateOfChangeGR = 0.0f;
+        float compressionActivityRatio = 0.0f;
+      
         juce::String formatMetrics() const
         {
             juce::String metricsContent;
 
-            metricsContent << signalName << "\n";
+            metricsContent << "**" << signalName << "**" << "\n";
             metricsContent << "-------------------\n";
+            metricsContent << "Average energy in dB: " << juce::Decibels::gainToDecibels(meanEnergy) << "\n";
             metricsContent << "Peak value in dB: " << juce::Decibels::gainToDecibels(peak) << "\n";
-            metricsContent << "Mean square energy in dB: " << juce::Decibels::gainToDecibels(meanSquare) << "\n";
+            if (isCompressed) metricsContent << "Peak value in dB (without makeup gain): " << juce::Decibels::gainToDecibels(peak) - makeup << "\n";
             metricsContent << "RMS value in dB: " << juce::Decibels::gainToDecibels(rms) << "\n";
+            if (isCompressed) metricsContent << "RMS value in dB (without makeup gain): " << juce::Decibels::gainToDecibels(rms) - makeup << "\n";
             metricsContent << "Crest factor in dB: " << crestFactor << "\n";
             metricsContent << "LUFS: " << lufs << "\n";
+            metricsContent << "LRA: " << lra << "\n";
             
-            if (trackGR) {
+            if (isCompressed) {
+                metricsContent << "\n";
+                metricsContent << "Metrics for highliting compression effects:" << "\n";
+                metricsContent << "-------------------\n";
+                metricsContent << "Dynamic range reduction based on LRA in dB: " << dynamicRangeReductionLRA << "\n";
+                metricsContent << "Dynamic range reduction based on LUFS in dB: " << dynamicRangeReductionLUFS << "\n";
+                metricsContent << "Dynamic range reduction based on crest factor in dB: " << dynamicRangeReductionCrest << "\n";
+                metricsContent << "Transient impact: " << transientImpact << "\n";
+                metricsContent << "Transient energy preservation: " << transientEnergyPreservation << "\n";
+                metricsContent << "Total harmonic distortion: " << harmonicDistortion << "\n\n";
+               
+                metricsContent << "Gain reduction signal metrics:" << "\n";
+                metricsContent << "-------------------\n";
                 metricsContent << "Maximum gain reduction in dB: " << maxGR << "\n";
                 metricsContent << "Average gain reduction in dB: " << avgGR << "\n";
+                metricsContent << "Gain reduction energy in dB: " << energyGR << "\n";
+                metricsContent << "Standard deviation of gain reduction: " << stdDevGR << "\n";
+                metricsContent << "Rate of change of gain reduction: " << rateOfChangeGR << "\n";
+                metricsContent << "Compression activity ratio: " << compressionActivityRatio << "\n";
             }
             metricsContent << "\n";
             return metricsContent;
@@ -108,102 +134,194 @@ public:
 
 
     //==============================================================================
-    void extractMetrics(float peakThreshold, float rmsThreshold);
+    void extractMetrics(float peakMakeup, float rmsMakeup);
 
 private:
     //==============================================================================
-    float getMeanSquareEnergy(const juce::AudioBuffer<float>& signal);
     
-    float getPeakValue(const juce::AudioBuffer<float>& signal);
+    // Signal metrics
+    //==============================================================================
+    /**
+     * Computes the peak value of the given audio buffer.
+     *
+     * @param buffer The input audio buffer.
+     * @return The peak value in linear scale.
+     */
+    float getPeakValue(const juce::AudioBuffer<float>& buffer);
 
+    /**
+     * Calculates the average energy of the audio buffer.
+     *
+     * @param buffer The input audio buffer.
+     * @return The average energy in linear scale.
+     */
+    float getAverageEnergy(const juce::AudioBuffer<float>& buffer);
+
+    /**
+     * Converts a mean square value into RMS.
+     *
+     * @param meanSquare The mean square value of the signal.
+     * @return The RMS value in linear scale.
+     */
     float getRMSValue(float meanSquare);
 
+    /**
+     * Computes the crest factor, which is the ratio of peak to RMS value.
+     *
+     * @param peakValue The peak value of the signal.
+     * @param rmsValue The RMS value of the signal.
+     * @return The crest factor in dB.
+     */
     float getCrestFactor(float peakValue, float rmsValue);
 
+    /**
+     * Computes the Integrated Loudness (LUFS) of the given audio buffer, following
+     * the EBU R128 standard.
+     *
+     * @param buffer The input audio buffer.
+     * @return The LUFS value of the signal.
+     */
     float getLUFS(const juce::AudioBuffer<float>& buffer);
 
-    float getDynamicRangeReduction(float compressedCrestFactor);
+    /**
+     * Computes the Loudness Range (LRA) of the given audio buffer.
+     *
+     * LRA measures the dynamic range of loudness over time, following
+     * the EBU R128 standard.
+     *
+     * @param buffer The input audio buffer.
+     * @param sampleRate The sampling rate of the audio.
+     * @param windowDuration The duration (in seconds) of each sliding window.
+     * @param hopDuration The hop size (in seconds) between consecutive windows.
+     * @return The Loudness Range (LRA) in LU (Loudness Units).
+     */
+    float getLRA(const juce::AudioBuffer<float>& buffer);
 
+    // Metrics for comparing uncompressed and compressed signals
+    //==============================================================================
+    /**
+     * Computes the reduction in crest factor due to compression.
+     *
+     * @param compressedCrestFactor The crest factor of the compressed signal.
+     * @return The dynamic range reduction in dB.
+     */
+    float getDynamicRangeReductionCrest(float compressedCrestFactor);
 
+    /**
+     * Computes the reduction in LUFS (Integrated Loudness) due to compression.
+     *
+     * @param compressedLUFS The LUFS value of the compressed signal.
+     * @return The dynamic range reduction in LU.
+     */
+    float getDynamicRangeReductionLUFS(float compressedLUFS);
 
+    /**
+     * Computes the reduction in Loudness Range (LRA) due to compression.
+     *
+     * @param compressedLRA The LRA of the compressed signal.
+     * @return The dynamic range reduction in LU.
+     */
+    float getDynamicRangeReductionLRA(float compressedLRA);
 
+    /**
+     * Calculates the transient impact of compression on the signal.
+     *
+     * @param compressedSignal The compressed audio signal buffer.
+     * @param makeup The makeup gain applied after compression.
+     * @return The relative change in transient amplitude.
+     */
+    float getTransientImpact(const juce::AudioBuffer<float>& compressedSignal, float makeup);
 
+    /**
+     * Measures how much transient energy is preserved after compression.
+     *
+     * @param compressedSignal The compressed audio signal buffer.
+     * @return The transient energy preservation ratio (0 to 1).
+     */
+    float getTransientEnergyPreservation(const juce::AudioBuffer<float>& compressedSignal);
 
-    float getRMSE(const juce::AudioBuffer<float>* signalA, const juce::AudioBuffer<float>* signalB) const;
+    /**
+     * Computes the harmonic distortion introduced by compression.
+     *
+     * @param compressedBuffer The compressed audio signal buffer.
+     * @return The harmonic distortion in dB.
+     */
+    float getHarmonicDistortion(const juce::AudioBuffer<float>& compressedBuffer);
 
-    float getCorrelation(const juce::AudioBuffer<float>* signalA, const juce::AudioBuffer<float>* signalB) const;
-
+    // Gain reduction signal metrics
+    //==============================================================================
+    /**
+     * Finds the maximum gain reduction applied during compression.
+     *
+     * @param gainReductionBuffer The buffer representing the gain reduction signal.
+     * @return The maximum gain reduction in dB.
+     */
     float getMaxGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer) const;
 
+    /**
+     * Computes the average gain reduction applied during compression.
+     *
+     * @param gainReductionBuffer The buffer representing the gain reduction signal.
+     * @return The average gain reduction in dB.
+     */
     float getAverageGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer) const;
+
+    /**
+     * Computes the standard deviation of the gain reduction signal.
+     *
+     * @param gainReductionBuffer The buffer representing the gain reduction signal.
+     * @param mean The mean value of gain reduction.
+     * @return The standard deviation of the gain reduction in dB.
+     */
+    float getStdDevGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer, float mean);
+
+    /**
+     * Measures the total energy reduction due to compression.
+     *
+     * @param gainReductionBuffer The buffer representing the gain reduction signal.
+     * @return The gain reduction energy in dB.
+     */
+    float getEnergyGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer);
+
+    /**
+     * Calculates the rate of change in the gain reduction signal.
+     *
+     * @param gainReductionSignal The buffer representing the gain reduction signal.
+     * @return The average rate of change of gain reduction.
+     */
+    float getRateOfChangeGainReduction(const juce::AudioBuffer<float>& gainReductionSignal);
+
+    /**
+     * Computes the ratio of time the compressor is actively reducing gain.
+     *
+     * @param gainReductionSignal The buffer representing the gain reduction signal.
+     * @return The compression activity ratio (0 to 1).
+     */
+    float getCompressionActivityRatio(const juce::AudioBuffer<float>& gainReductionSignal);
+
     
-    float getCrestFactor(const juce::AudioBuffer<float>& buffer) const;
-
-    /*
-    * Computes the Loudness Range (LRA) of the given audio buffer.
-    *
-    * LRA is calculated following the EBU R128 standard, which measures
-    * the dynamic range of loudness over time. The LRA is derived from
-    * the difference between the 95th and 10th percentiles of short-term
-    * loudness values, calculated over sliding windows.
-    *
-    * Steps:
-    * 1. Apply K-weighting filters to simulate human hearing sensitivity.
-    * 2. Use a sliding window approach to calculate short-term loudness (LUFS).
-    * 3. Sort short-term loudness values and exclude outliers (extreme values).
-    * 4. Calculate the difference between the 95th and 10th percentiles.
-    *
-    * @param buffer The input audio buffer.
-    * @param sampleRate The sampling rate of the audio.
-    * @param windowDuration The duration (in seconds) of each sliding window.
-    * @param hopDuration The hop size (in seconds) between consecutive windows.
-    * @return The Loudness Range (LRA) in LU (Loudness Units).
-    */
-    float getLRA(const juce::AudioBuffer<float>& buffer, double sampleRate, float windowDuration, float hopDuration) const;
-
-    float getGainReductionStdDev(const juce::AudioBuffer<float>& gainReductionBuffer);
-
-    float getCompressionActivityRatio(const juce::AudioBuffer<float>* gainReductionSignal);
-
-    float getGainReductionCrestFactor(const juce::AudioBuffer<float>* gainReductionSignal);
-
-    float getTransientImpact(const juce::AudioBuffer<float>* uncompressedSignal, const juce::AudioBuffer<float>* compressedSignal);
-
-    float getGainReductionRateOfChange(const juce::AudioBuffer<float>* gainReductionSignal, float sampleRate);
-
-    float getGainReductionEnergy(const juce::AudioBuffer<float>* gainReductionSignal);
-
-    float getRatioEfficiency(const juce::AudioBuffer<float>* inputSignal, const juce::AudioBuffer<float>* gainReductionSignal, float ratio);
-
-    float getAttackReleaseTime(const juce::AudioBuffer<float>* gainReductionSignal, float sampleRate);
-
-    float getTemporalSmoothness(const juce::AudioBuffer<float>* gainReductionSignal);
-
-    float getTransientEnergyPreservation(const juce::AudioBuffer<float>* uncompressedSignal, const juce::AudioBuffer<float>* compressedSignal);
-
-
+    
     //==============================================================================
-    bool validateSignal(const juce::AudioBuffer<float>& signal) const;
-
+    bool validateSignals() const;
+   
     void downsampleBuffer(juce::AudioBuffer<float>* buffer);
 
-    //==============================================================================
     void applyKWeighting(juce::AudioBuffer<float>& buffer);
+
+    std::vector<juce::AudioBuffer<float>> getWindowsFromBuffer(const juce::AudioBuffer<float>& buffer);
+
+    //==============================================================================
 
     float getIntegratedLoudness(float meanSquare);
 
-
+    std::vector<float> getShortTermLoudness(juce::AudioBuffer<float>& buffer);
     
-    // All signals values are in linear gain
     //==============================================================================
-    juce::AudioBuffer<float>* uncompressedSignal = nullptr;
-    juce::AudioBuffer<float>* peakCompressedSignal = nullptr;
-    juce::AudioBuffer<float>* rmsCompressedSignal = nullptr;
-    juce::AudioBuffer<float>* rmsGainReductionSignal = nullptr;
-    juce::AudioBuffer<float>* peakGainReductionSignal = nullptr;
-    
     double sampleRate{ 0.0f };
-    int downSamplingFactor{ 10 };
+
+    // for extracting windows for short-term calculations
+    float windowDuration{ 0.4f }; // 40 ms windows
+    float hopDuration{ 0.2f }; // 20 ms overlaps
 
     CompressionMetrics uncompressedMetrics;
     CompressionMetrics peakMetrics;

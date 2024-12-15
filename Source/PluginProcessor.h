@@ -221,7 +221,7 @@ private:
     
     juce::AudioFormatManager formatManager; // Handles audio format readers
     
-    juce::File outputDirectory = Config::OutputPath::path;
+    juce::File outputDirectory = juce::File(Config::OutputPath::path);
 
     // Files for metrics extraction
     bool saveFiles = Config::saveCompressedFiles::save;

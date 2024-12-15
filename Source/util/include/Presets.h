@@ -37,8 +37,8 @@ namespace Preset {
 
     constexpr PresetData Drums = {
         1, "Drums",
-        { -17.0f, 4.0f, 5.0f, 100.0f, 1.0f, 2.7f }, // Peak
-        { -19.5f, 4.0f, 10.0f, 165.0f, 1.0f, 2.5f }  // RMS
+        { -17.0f, 4.0f, 5.0f, 100.0f, 1.0f, 2.65f }, // Peak
+        { -19.5f, 4.0f, 10.0f, 165.0f, 1.0f, 2.45f }  // RMS
     };
 
     constexpr PresetData Bass = {
