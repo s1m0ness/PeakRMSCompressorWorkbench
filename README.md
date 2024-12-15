@@ -262,7 +262,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   JUCE/extras/Projucer/Builds/MacOSX/build/Debug/
   ```
   and select `Projucer.app` file (you can ignore this step if the .jucer file is already recognized).
-- Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select the directory:
+- Once the project opens in Projucer, go to **Projucer > Global Paths > JUCE Modules** and select the directory:
   ```plaintext
   JUCE/modules
   ```
@@ -288,7 +288,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
   - Go to the **Run** section, click on **Executables**, select **Other...** and navigate to:
     ```plaintext
-    JUCE/extras/AudioPluginHost/Builds/MacOS/build/Debug/
+    JUCE/extras/AudioPluginHost/Builds/MacOSX/build/Debug/
     ```
   - Select `AudioPluginHost.app`.
 
