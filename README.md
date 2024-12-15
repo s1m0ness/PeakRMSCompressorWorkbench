@@ -149,9 +149,9 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   ```
 - Right-click on `AudioFilePlayer.jucer` and select **Open in Program** and navigate to:
   ```plaintext
-  JUCE\extras\Projucer
+  JUCE\extras\Projucer\Builds\VisualStudio2022\x64\Debug\App
   ```
-  and select `Projucer` file.
+  and select `Projucer.exe` file.
 - Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules**, click on **Select directory** and navigate to:
   ```plaintext
   JUCE\modules
@@ -259,9 +259,9 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   ```
 - Right-click on `AudioFilePlayer.jucer` and select **Open with** and navigate to:
   ```plaintext
-  JUCE/extras/Projucer
+  JUCE/extras/Projucer/Builds/MacOSX/build/Debug/
   ```
-  and select `Projucer.jucer` file.
+  and select `Projucer.app` file.
 - Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select the directory:
   ```plaintext
   JUCE/modules
