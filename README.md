@@ -192,7 +192,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
   - Save the configuration as a `.filtergraph` file in your `PeakRMSCompressorWorkbench` directory.
-  - Your .filtergraph file should look like the following:
+  - Your `.filtergraph` file should look like the following:
   <div align="center">
     <img src="images/filtergraph_demo.png" width="400" alt="Filtergraph Example">
   </div>
@@ -305,7 +305,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**, also click on **Scan for new or updated AudioUnit plug-ins**.
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
   - Save the configuration as a `.filtergraph` file in your `PeakRMSCompressorWorkbench` directory.
-  - Your .filtergraph file should look like the following:
+  - Your `.filtergraph` file should look like the following:
   <div align="center">
     <img src="images/filtergraph_demo.png" width="400" alt="Filtergraph Example">
   </div>
