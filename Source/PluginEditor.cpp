@@ -164,7 +164,7 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
         valueTreeState, "rms_makeup", rmsMakeupSlider);
     
     //==============================================================================
-
+    // Add metering
     addAndMakeVisible(meter);
     meter.setMode(Meter::Mode::GR);
 
@@ -199,7 +199,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::resized()
     auto buttonWidth = 150;
     auto buttonHeight = 30;
     const int buttonSpacing = 10; // Vertical spacing between buttons
-    const int verticalOffset = 30; // Move all buttons down by 30 pixels
+    const int verticalOffset = 30; // Move all buttons down by 30 pixels (space for progress bar)
 
     powerButton.setBounds(10, 10 + verticalOffset, buttonWidth, buttonHeight);
     muteButton.setBounds(10, powerButton.getBottom() + buttonSpacing, buttonWidth, buttonHeight);

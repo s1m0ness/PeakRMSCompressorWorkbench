@@ -149,9 +149,9 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   ```
 - Right-click on `AudioFilePlayer.jucer` and select **Open in Program** and navigate to:
   ```plaintext
-  JUCE\extras\Projucer
+  JUCE\extras\Projucer\Builds\VisualStudio2022\x64\Debug\App
   ```
-  and select `Projucer` file.
+  and select `Projucer.exe` file (you can ignore this step if the .jucer file is already recognized).
 - Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules**, click on **Select directory** and navigate to:
   ```plaintext
   JUCE\modules
@@ -202,7 +202,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 To set up and run this project on **MacOS**, ensure you have the following installed:
 
 1. [JUCE](https://juce.com/): A C++ framework for audio application development.
-2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback
+2. [AudioFilePlayerPlugin](https://github.com/hollance/AudioFilePlayerPlugin): Required for real-time audio compression playback.
 3. [Xcode](https://developer.apple.com/xcode/): The IDE for building and running the project.
 
 ---
@@ -259,10 +259,10 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   ```
 - Right-click on `AudioFilePlayer.jucer` and select **Open with** and navigate to:
   ```plaintext
-  JUCE/extras/Projucer
+  JUCE/extras/Projucer/Builds/MacOSX/build/Debug/
   ```
-  and select `Projucer.jucer` file.
-- Once the project opens in Projucer, go to **File > Global Paths > JUCE Modules** and select the directory:
+  and select `Projucer.app` file (you can ignore this step if the .jucer file is already recognized).
+- Once the project opens in Projucer, go to **Projucer > Global Paths > JUCE Modules** and select the directory:
   ```plaintext
   JUCE/modules
   ```
@@ -288,7 +288,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   - Go to **Set active scheme**, select the VST3 and click on **edit the scheme**
   - Go to the **Run** section, click on **Executables**, select **Other...** and navigate to:
     ```plaintext
-    JUCE/extras/AudioPluginHost/Builds/MacOS/build/Debug/
+    JUCE/extras/AudioPluginHost/Builds/MacOSX/build/Debug/
     ```
   - Select `AudioPluginHost.app`.
 
@@ -298,7 +298,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 *(Video reference: [16:26](https://youtu.be/Mo0Oco3Vimo?si=kwUowT6avbCAgVW0&t=986))*
 - Build and run the project.
 - In **AudioPluginHost**:
-  - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**.
+  - Go to **Options > Edit the list of Available Plug-ins > Options > Scan for new or updated VST3 plug-ins**, also click on **Scan for new or updated AudioUnit plug-ins**.
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
   - Save the configuration as a `.filtergraph` file in your `PeakRMSCompressorWorkbench` directory.
 
