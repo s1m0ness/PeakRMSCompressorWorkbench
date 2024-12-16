@@ -315,6 +315,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 ## Notes
 - Make sure the Projucer **Global Paths** are correctly set to your **JUCE/modules** directory.
 - Make sure the **AudioPluginHost** path is correctly set in the project properties.
+- Make sure your you choose **PeakRMSCompressorWorkbench_VST3** as the target for running the project.
 - If you encounter issues with VST scanning (on Windows), ensure that the VST3 folder permissions are correctly configured.
 
 ---
