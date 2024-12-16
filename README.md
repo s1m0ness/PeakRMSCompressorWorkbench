@@ -194,7 +194,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   - Save the configuration as a `.filtergraph` file in your `PeakRMSCompressorWorkbench` directory.
   - Your .filtergraph file should look the following:
     
-  <div align="center">
+  <div align="left">
     <img src="images/filtergraph_demo.png" width="400" alt="Filtergraph Example">
   </div>
 
