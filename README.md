@@ -193,7 +193,9 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   - Add `AudioFilePlayer` and `PeakRMSCompressorWorkbench` VSTs to the host.
   - Save the configuration as a `.filtergraph` file in your `PeakRMSCompressorWorkbench` directory.
   - Your .filtergraph file should look the following:
-  <img src="images/filtergraph_demo.png" width="400" alt="Filtergraph Example">
+  <div align="center">
+    <img src="images/filtergraph.png" width="400" alt="Filtergraph Example">
+  </div>
 
 ---
 
