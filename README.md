@@ -196,6 +196,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   <div align="center">
     <img src="images/filtergraph_demo.png" width="400" alt="Filtergraph Example">
   </div>
+  - **Double left-click** on each plugin to view the GUI.
 
 ---
 
@@ -309,6 +310,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
   <div align="center">
     <img src="images/filtergraph_demo.png" width="400" alt="Filtergraph Example">
   </div>
+  - **Double left-click** on each plugin to view the GUI.
 
 ---
 
