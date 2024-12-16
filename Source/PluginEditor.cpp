@@ -164,7 +164,11 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
         valueTreeState, "rms_makeup", rmsMakeupSlider);
     
     //==============================================================================
-    setSize (500, 1200);
+
+    addAndMakeVisible(meter);
+    meter.setMode(Meter::Mode::GR);
+
+    setSize (1000, 600);
     updateParameterState();
     startTimerHz(60);
 }
@@ -188,81 +192,64 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::resized()
     // ProgressBar for metrics extraction
     auto progressBarHeight = 30;
     auto progressBarArea = area.removeFromTop(progressBarHeight).reduced(5);
+    progressBarArea.setWidth(progressBarArea.getWidth() / 2); // Set width to half
     progressBar.setBounds(progressBarArea);
 
     // Buttons
-    auto buttonArea = area.removeFromTop(40);
+    auto buttonWidth = 150;
     auto buttonHeight = 30;
-    auto powerButtonWidth = 100;
-    auto rmsButtonWidth = 120;
-    auto extractButtonWidth = 140;
-    auto buttonY = buttonArea.getY() + (buttonArea.getHeight() - buttonHeight) / 2;
-    auto buttonX = buttonArea.getX();
-    auto buttonSpacing = 50;
+    const int buttonSpacing = 10; // Vertical spacing between buttons
+    const int verticalOffset = 30; // Move all buttons down by 30 pixels
 
-    powerButton.setBounds(buttonX, buttonY, powerButtonWidth, buttonHeight);
-    muteButton.setBounds(buttonX, buttonY + 20, powerButtonWidth, buttonHeight);
+    powerButton.setBounds(10, 10 + verticalOffset, buttonWidth, buttonHeight);
+    muteButton.setBounds(10, powerButton.getBottom() + buttonSpacing, buttonWidth, buttonHeight);
+    rmsSwitchButton.setBounds(10, muteButton.getBottom() + buttonSpacing, buttonWidth, buttonHeight);
+    extractMetricsButton.setBounds(muteButton.getRight() + 20, 10 + verticalOffset, buttonWidth, buttonHeight);
 
-    buttonX = powerButton.getRight() + buttonSpacing;
-    rmsSwitchButton.setBounds(buttonX, buttonY, rmsButtonWidth, buttonHeight);
+    // ComboBox
+    presetComboBox.setBounds(extractMetricsButton.getX(),
+        extractMetricsButton.getBottom() + buttonSpacing,
+        buttonWidth, buttonHeight);
 
-    buttonX = rmsSwitchButton.getRight() + buttonSpacing;
-    extractMetricsButton.setBounds(buttonX, buttonY, extractButtonWidth, buttonHeight);
+    // Meter
+    auto meterWidth = 500;
+    auto meterHeight = 150;
+    auto meterY = 10; 
+    auto meterX = getWidth() - meterWidth - 20;
 
-    // ComboBox for presets
-    auto comboBoxHeight = 30;
-    auto comboBoxWidth = 150;
-    presetComboBox.setBounds(buttonX, buttonY + 40, comboBoxWidth, comboBoxHeight);
+    meter.setBounds(meterX, meterY, meterWidth, meterHeight);
 
-    // Sliders and labels
-    auto labelWidth = area.getWidth() / 3;
-    auto sliderWidth = area.getWidth() - labelWidth - 20;
-    auto sliderHeight = 40;
+    // Two columns for sliders
+    auto columnSpacing = 20;
+    auto slidersArea = area;
+    slidersArea.removeFromTop(130); // Move the sliders area down by 100 pixels
 
-    peakThresholdLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    peakThresholdSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
+    auto leftColumn = slidersArea.removeFromLeft(slidersArea.getWidth() / 2 - columnSpacing);
+    auto rightColumn = slidersArea;
 
-    peakRatioLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    peakRatioSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
+    auto addSliderAndLabel = [](juce::Rectangle<int>& colArea,
+        juce::Label& label, juce::Slider& slider, int labelWidth)
+        {
+            label.setBounds(colArea.removeFromTop(30).removeFromLeft(labelWidth));
+            slider.setBounds(colArea.removeFromTop(40).reduced(5));
+        };
 
-    peakAttackLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    peakAttackSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
+    // Peak sliders in the left column
+    auto labelWidth = 120;
+    addSliderAndLabel(leftColumn, peakThresholdLabel, peakThresholdSlider, labelWidth);
+    addSliderAndLabel(leftColumn, peakRatioLabel, peakRatioSlider, labelWidth);
+    addSliderAndLabel(leftColumn, peakAttackLabel, peakAttackSlider, labelWidth);
+    addSliderAndLabel(leftColumn, peakReleaseLabel, peakReleaseSlider, labelWidth);
+    addSliderAndLabel(leftColumn, peakKneeLabel, peakKneeSlider, labelWidth);
+    addSliderAndLabel(leftColumn, peakMakeupLabel, peakMakeupSlider, labelWidth);
 
-    peakReleaseLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    peakReleaseSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-
-    peakKneeLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    peakKneeSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-
-    peakMakeupLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    peakMakeupSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-    
-    rmsThresholdLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    rmsThresholdSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-
-    rmsRatioLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    rmsRatioSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-
-    rmsAttackLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    rmsAttackSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-
-    rmsReleaseLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    rmsReleaseSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-
-    rmsKneeLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    rmsKneeSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-
-    rmsMakeupLabel.setBounds(area.removeFromTop(sliderHeight).removeFromLeft(labelWidth));
-    rmsMakeupSlider.setBounds(area.removeFromTop(sliderHeight).reduced(5));
-    
-    // Metering
-    addAndMakeVisible(meter);
-    meter.setMode(Meter::Mode::GR);
-    juce::FlexBox meterBox;
-    meterBox.flexWrap = juce::FlexBox::Wrap::noWrap;
-    meterBox.justifyContent = juce::FlexBox::JustifyContent::spaceAround;
-    meterBox.items.add(juce::FlexItem(meter).withFlex(1).withMargin(1));
-    meterBox.performLayout(area.toFloat());
+    // RMS sliders in the right column
+    addSliderAndLabel(rightColumn, rmsThresholdLabel, rmsThresholdSlider, labelWidth);
+    addSliderAndLabel(rightColumn, rmsRatioLabel, rmsRatioSlider, labelWidth);
+    addSliderAndLabel(rightColumn, rmsAttackLabel, rmsAttackSlider, labelWidth);
+    addSliderAndLabel(rightColumn, rmsReleaseLabel, rmsReleaseSlider, labelWidth);
+    addSliderAndLabel(rightColumn, rmsKneeLabel, rmsKneeSlider, labelWidth);
+    addSliderAndLabel(rightColumn, rmsMakeupLabel, rmsMakeupSlider, labelWidth);
 }
 
 // ADDITIONAL FUNCTIONS
