@@ -36,7 +36,7 @@
 #include "PluginProcessor.h"
 #include "gui/include/Meter.h"
 #include <../Source/util/include/Constants.h>
-#include <../Source/util/include/Config.h>
+
 
 //==============================================================================
 /**
