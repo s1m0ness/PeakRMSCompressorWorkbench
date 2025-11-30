@@ -43,15 +43,15 @@
 
 #include <../Source/util/include/Presets.h>
 
-#if __has_include(<../Source/util/include/Presets.user.h>)
-#include <../Source/util/include/Presets.user.h>   // ignored by git, user overrides
+#if __has_include(<../Source/util/include/PresetsUser.h>)
+#include <../Source/util/include/PresetsUser.h>   // ignored by git, user overrides
 #endif
 
 
 #include <../Source/util/include/Config.h>
 
-#if __has_include( <../Source/util/include/Config.user.h>)
-#include <../Source/util/include/Config.user.h>  // ignored by git, user presets
+#if __has_include( <../Source/util/include/ConfigUser.h>)
+#include <../Source/util/include/ConfigUser.h>  // ignored by git, user presets
 #endif
 
 //==============================================================================

@@ -4,5 +4,6 @@
 *.filtergraph
 *.vs
 
-Source/util/include/Config.h
-Source/util/include/Presets.h
+Source/util/include/ConfigUser.h
+Source/util/include/PresetsUser.h
+
