@@ -41,17 +41,17 @@
 
  // Load defaults first, then include user override files if they exist.
 
-#include <../Source/util/include/Presets.default.h>
+#include <../Source/util/include/Presets.h>
 
-#if __has_include(<../Source/util/include/Presets.h>)
-#include <../Source/util/include/Presets.h>   // ignored by git, user overrides
+#if __has_include(<../Source/util/include/Presets.user.h>)
+#include <../Source/util/include/Presets.user.h>   // ignored by git, user overrides
 #endif
 
 
-#include <../Source/util/include/Config.default.h>
+#include <../Source/util/include/Config.h>
 
-#if __has_include( <../Source/util/include/Config.h>)
-#include <../Source/util/include/Config.h>  // ignored by git, user presets
+#if __has_include( <../Source/util/include/Config.user.h>)
+#include <../Source/util/include/Config.user.h>  // ignored by git, user presets
 #endif
 
 
