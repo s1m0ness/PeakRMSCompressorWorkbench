@@ -3,3 +3,6 @@
 **/.DS_Store
 *.filtergraph
 *.vs
+
+Source/util/include/Config.h
+Source/util/include/Presets.h
