@@ -54,8 +54,6 @@
 #include <../Source/util/include/Config.user.h>  // ignored by git, user presets
 #endif
 
-
-
 //==============================================================================
 /**
 */
