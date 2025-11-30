@@ -6,7 +6,7 @@ DIR="Source/util/include"
 
 for f in Config Presets; do
     if [ ! -f "$DIR/$f.h" ]; then
-        cp "$DIR/$f.default.h" "$DIR/$f.h"
+        cp "$DIR/$f.user.h" "$DIR/$f.h"
         echo "Created $f.h"
     else
         echo "$f.h exists"
