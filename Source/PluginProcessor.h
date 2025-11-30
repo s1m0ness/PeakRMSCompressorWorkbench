@@ -38,8 +38,22 @@
 #include <../Source/dsp/include/LevelEnvelopeFollower.h>
 #include <../Source/metrics/include/Metrics.h>
 #include <../Source/util/include/Constants.h>
-#include <../Source/util/include/Config.h>
-#include <../Source/util/include/Presets.h>
+
+ // Load defaults first, then include user override files if they exist.
+
+#include <../Source/util/include/Presets.default.h>
+
+#if __has_include(<../Source/util/include/Presets.h>)
+#include <../Source/util/include/Presets.h>   // ignored by git, user overrides
+#endif
+
+
+#include <../Source/util/include/Config.default.h>
+
+#if __has_include( <../Source/util/include/Config.h>)
+#include <../Source/util/include/Config.h>  // ignored by git, user presets
+#endif
+
 
 
 //==============================================================================
