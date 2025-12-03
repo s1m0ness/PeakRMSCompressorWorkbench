@@ -227,10 +227,9 @@ private:
      * Calculates the transient impact of compression on the signal.
      *
      * @param compressedSignal The compressed audio signal buffer.
-     * @param makeup The makeup gain applied after compression.
      * @return The relative change in transient amplitude.
      */
-    float getTransientImpact(const juce::AudioBuffer<float>& compressedSignal, float makeup);
+    float getTransientImpact(const juce::AudioBuffer<float>& compressedSignal);
 
     /**
      * Measures how much transient energy is preserved after compression.

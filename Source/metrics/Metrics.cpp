@@ -107,7 +107,7 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
             metrics.dynamicRangeReductionCrest = getDynamicRangeReductionCrest(metrics.crestFactor);
             metrics.dynamicRangeReductionLUFS = getDynamicRangeReductionLUFS(metrics.lufs);
             metrics.dynamicRangeReductionLRA = getDynamicRangeReductionLRA(metrics.lra);
-            metrics.transientImpact = getTransientImpact(*metrics.signal, makeup);
+            metrics.transientImpact = getTransientImpact(*metrics.signal);
             metrics.transientEnergyPreservation = getTransientEnergyPreservation(*metrics.signal);
             metrics.harmonicDistortion = getHarmonicDistortion(*metrics.signal);
 
@@ -217,34 +217,45 @@ float Metrics::getDynamicRangeReductionLRA(float compressedLRA) {
     return uncompressedMetrics.lra - compressedLRA; // in db
 }
 
-float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuffer, float makeup) 
+float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuffer)
 {
-    auto computeTransientAmplitudeDb = [](const juce::AudioBuffer<float>& buffer, float makeup) {
-        
-        float maxTransientDb = -std::numeric_limits<float>::infinity();
-        int totalSamples = buffer.getNumSamples();
-        int totalChannels = buffer.getNumChannels();
+    // Helper: compute a simple transient strength measure
+    auto computeTransientStrength = [](const juce::AudioBuffer<float>& buffer)
+        {
+            float maxDelta = 0.0f;
+            const int totalSamples = buffer.getNumSamples();
+            const int totalChannels = buffer.getNumChannels();
 
-        for (int channel = 0; channel < totalChannels; ++channel) {
-            const float* channelData = buffer.getReadPointer(channel);
-            for (int sample = 1; sample < totalSamples; ++sample) {
-                float delta = std::abs(channelData[sample] - channelData[sample - 1]);
-                if (delta > 0.0f) {
-                    float transientDb = juce::Decibels::gainToDecibels(delta, -100.0f) - makeup;
-                    maxTransientDb = std::max(maxTransientDb, transientDb);
+            for (int channel = 0; channel < totalChannels; ++channel)
+            {
+                const float* channelData = buffer.getReadPointer(channel);
+
+                for (int sample = 1; sample < totalSamples; ++sample)
+                {
+                    const float delta = std::abs(channelData[sample] - channelData[sample - 1]);
+                    if (delta > maxDelta)
+                        maxDelta = delta;
                 }
             }
-        }
-        return maxTransientDb;
+
+            return maxDelta; // linear, 0..1-ish
         };
 
-    float uncompressedTransients = computeTransientAmplitudeDb(*uncompressedMetrics.signal, uncompressedMetrics.makeup);
-    float compressedTransients = computeTransientAmplitudeDb(compressedBuffer, makeup);
+    const float uncompressedTransients = computeTransientStrength(*uncompressedMetrics.signal);
+    const float compressedTransients = computeTransientStrength(compressedBuffer);
 
-    return (uncompressedTransients > 0.0f && compressedTransients > 0.0f)
-        ? (uncompressedTransients - compressedTransients) / uncompressedTransients
-        : 0.0f;
+    if (uncompressedTransients <= 0.0f)
+        return 0.0f; // no transient content to compare
+
+    // Fraction of lost transient strength: 0 = no loss, 1 = fully flattened
+    float impact = (uncompressedTransients - compressedTransients) / uncompressedTransients;
+
+    // Clamp to [0, 1] in case of weird numerical stuff
+    impact = juce::jlimit(0.0f, 1.0f, impact);
+
+    return impact;
 }
+
 
 float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& compressedBuffer) 
 {
