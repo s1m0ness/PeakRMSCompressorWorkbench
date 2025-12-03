@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file defines the Metrics class, responsible for calculating and storing audio analysis metrics.
  *
  * Key Features:
@@ -257,40 +257,76 @@ float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuff
 }
 
 
-float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& compressedBuffer) 
+float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& compressedBuffer)
 {
     const float transientThresholdMultiplier = 3.0f; // Multiplier for transient threshold
 
+    // Split both signals into short-time windows
     std::vector<juce::AudioBuffer<float>> uncompressedWindows = getWindowsFromBuffer(*uncompressedMetrics.signal);
     std::vector<juce::AudioBuffer<float>> compressedWindows = getWindowsFromBuffer(compressedBuffer);
 
-    std::vector<float> uncompressedShortTermRMSvalues, compressedShortTermRMSvalues;
+    // Basic safety: if something went wrong, bail out
+    if (uncompressedWindows.empty() || uncompressedWindows.size() != compressedWindows.size())
+        return 0.0f;
 
-    for (const auto& windowBuffer : uncompressedWindows) {
-        uncompressedShortTermRMSvalues.push_back(juce::Decibels::gainToDecibels(getRMSValue(getAverageEnergy(windowBuffer))));
+    const size_t numWindows = uncompressedWindows.size();
+
+    std::vector<float> uncompressedRMS;
+    std::vector<float> compressedRMS;
+    uncompressedRMS.reserve(numWindows);
+    compressedRMS.reserve(numWindows);
+
+    // Compute short-term RMS (linear) for each window
+    for (size_t i = 0; i < numWindows; ++i)
+    {
+        float rmsUncompressed = getRMSValue(getAverageEnergy(uncompressedWindows[i]));
+        float rmsCompressed = getRMSValue(getAverageEnergy(compressedWindows[i]));
+
+        uncompressedRMS.push_back(rmsUncompressed);
+        compressedRMS.push_back(rmsCompressed);
     }
 
-    for (const auto& windowBuffer : compressedWindows) {
-        compressedShortTermRMSvalues.push_back(juce::Decibels::gainToDecibels(getRMSValue(getAverageEnergy(windowBuffer))));
-    }
+    // Mean short-term RMS of the uncompressed signal
+    float sumUncompressedRMS = std::accumulate(uncompressedRMS.begin(),
+        uncompressedRMS.end(),
+        0.0f);
 
-    float uncompressedMeanRMS = std::accumulate(uncompressedShortTermRMSvalues.begin(),
-        uncompressedShortTermRMSvalues.end(), 0.0f)
-        / uncompressedShortTermRMSvalues.size();
-    const float threshold = transientThresholdMultiplier * uncompressedMeanRMS;
+    if (sumUncompressedRMS <= 0.0f)
+        return 0.0f;
 
+    float meanUncompressedRMS = sumUncompressedRMS / static_cast<float>(numWindows);
+
+    // Threshold for "transient / loud" windows (in linear units)
+    const float threshold = transientThresholdMultiplier * meanUncompressedRMS;
+
+    // Accumulate energy in transient windows before and after compression
     float uncompressedEnergy = 0.0f;
     float compressedEnergy = 0.0f;
 
-    for (size_t i = 0; i < uncompressedWindows.size(); ++i) {
-        float rmsUncompressed = uncompressedShortTermRMSvalues[i];
-        if (rmsUncompressed > threshold) {
-            float rmsCompressed = compressedShortTermRMSvalues[i];
-            uncompressedEnergy += rmsUncompressed * rmsUncompressed; 
-            compressedEnergy += rmsCompressed * rmsCompressed;       
+    for (size_t i = 0; i < numWindows; ++i)
+    {
+        float rmsU = uncompressedRMS[i];
+
+        if (rmsU > threshold)
+        {
+            float rmsC = compressedRMS[i];
+
+            // Energy ∝ RMS^2
+            uncompressedEnergy += rmsU * rmsU;
+            compressedEnergy += rmsC * rmsC;
         }
     }
-    return (uncompressedEnergy > 0.0f) ? std::min(compressedEnergy / uncompressedEnergy, 1.0f) : 0.0f;
+
+    if (uncompressedEnergy <= 0.0f)
+        return 0.0f;
+
+    float ratio = compressedEnergy / uncompressedEnergy;
+
+    // Clamp to [0, 1] – cannot preserve more than 100 % by definition here
+    if (ratio > 1.0f)
+        ratio = 1.0f;
+
+    return ratio;
 }
 
 float Metrics::getHarmonicDistortion(const juce::AudioBuffer<float>& compressedBuffer)
