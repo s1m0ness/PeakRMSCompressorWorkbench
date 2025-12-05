@@ -245,7 +245,7 @@ private:
      * @param compressedBuffer The compressed audio signal buffer.
      * @return The harmonic distortion in dB.
      */
-    float getHarmonicDistortion(const juce::AudioBuffer<float>& compressedBuffer);
+    float getWaveformDistortion(const juce::AudioBuffer<float>& compressedBuffer);
 
     // Gain reduction signal metrics
     //==============================================================================

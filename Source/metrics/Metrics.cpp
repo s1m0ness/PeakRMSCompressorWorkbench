@@ -109,7 +109,7 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
             metrics.dynamicRangeReductionLRA = getDynamicRangeReductionLRA(metrics.lra);
             metrics.transientImpact = getTransientImpact(*metrics.signal);
             metrics.transientEnergyPreservation = getTransientEnergyPreservation(*metrics.signal);
-            metrics.harmonicDistortion = getHarmonicDistortion(*metrics.signal);
+            metrics.harmonicDistortion = getWaveformDistortion(*metrics.signal);
 
             metrics.avgGR = getAverageGainReduction(*metrics.GRSignal);
             metrics.maxGR = getMaxGainReduction(*metrics.GRSignal);
@@ -329,23 +329,46 @@ float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& co
     return ratio;
 }
 
-float Metrics::getHarmonicDistortion(const juce::AudioBuffer<float>& compressedBuffer)
+float Metrics::getWaveformDistortion(const juce::AudioBuffer<float>& compressedBuffer)
 {
-    const int totalSamples = compressedBuffer.getNumSamples();
-    const int totalChannels = compressedBuffer.getNumChannels();
-    float errorSum = 0.0f;
+    const auto& originalBuffer = *uncompressedMetrics.signal;
+    const int totalSamples = originalBuffer.getNumSamples();
+    const int totalChannels = originalBuffer.getNumChannels();
+    double originalEnergySum = 0.0;
+    double errorEnergySum = 0.0;
 
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* originalData = uncompressedMetrics.signal->getReadPointer(channel);
-        const float* compressedData = compressedBuffer.getReadPointer(channel);
-        for (int i = 0; i < totalSamples; ++i) {
-            float error = originalData[i] - compressedData[i];
-            errorSum += error * error;
+    for (int ch = 0; ch < totalChannels; ++ch)
+    {
+        const float* originalData = originalBuffer.getReadPointer(ch);
+        const float* compressedData = compressedBuffer.getReadPointer(ch);
+
+        for (int i = 0; i < totalSamples; ++i)
+        {
+            const float x_u = originalData[i];
+            const float x_c = compressedData[i];
+            const float error = x_u - x_c;
+
+            originalEnergySum += static_cast<double>(x_u) * static_cast<double>(x_u);
+            errorEnergySum += static_cast<double>(error) * static_cast<double>(error);
         }
     }
-    float errorRMS = getRMSValue(errorSum / (totalSamples * totalChannels));
 
-    return (uncompressedMetrics.rms > 0.0f) ? (errorRMS / uncompressedMetrics.rms) : -100.0f;
+    const int totalCount = totalChannels * totalSamples;
+    if (totalCount <= 0)
+        return 0.0f;
+
+    const double originalMeanSquare = originalEnergySum / static_cast<double>(totalCount);
+    const double errorMeanSquare = errorEnergySum / static_cast<double>(totalCount);
+
+    const double originalRms = std::sqrt(originalMeanSquare);
+    const double errorRms = std::sqrt(errorMeanSquare);
+
+    const double eps = 1.0e-9;
+    if (originalRms <= eps)
+        return 0.0f; 
+
+    const double distortion = errorRms / originalRms;
+    return static_cast<float>(distortion);
 }
 
 // Gain reduction signal metrics
