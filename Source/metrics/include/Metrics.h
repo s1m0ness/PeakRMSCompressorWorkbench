@@ -59,7 +59,6 @@ public:
 
         // Metrics for comparing uncompressed and compressed signals
         float dynamicRangeReductionCrest{ 0.0f };
-        float dynamicRangeReductionLUFS{ 0.0f };
         float dynamicRangeReductionLRA{ 0.0f };
         float transientImpact{ 0.0f };
         float transientEnergyPreservation{ 0.0f };
@@ -93,7 +92,6 @@ public:
                 metricsContent << "Metrics for highliting compression effects:" << "\n";
                 metricsContent << "-------------------\n";
                 metricsContent << "Dynamic range reduction based on LRA in dB: " << dynamicRangeReductionLRA << "\n";
-                metricsContent << "Dynamic range reduction based on LUFS in dB: " << dynamicRangeReductionLUFS << "\n";
                 metricsContent << "Dynamic range reduction based on crest factor in dB: " << dynamicRangeReductionCrest << "\n";
                 metricsContent << "Transient impact: " << transientImpact << "\n";
                 metricsContent << "Transient energy preservation: " << transientEnergyPreservation << "\n";
@@ -206,14 +204,6 @@ private:
      * @return The dynamic range reduction in dB.
      */
     float getDynamicRangeReductionCrest(float compressedCrestFactor);
-
-    /**
-     * Computes the reduction in LUFS (Integrated Loudness) due to compression.
-     *
-     * @param compressedLUFS The LUFS value of the compressed signal.
-     * @return The dynamic range reduction in LU.
-     */
-    float getDynamicRangeReductionLUFS(float compressedLUFS);
 
     /**
      * Computes the reduction in Loudness Range (LRA) due to compression.

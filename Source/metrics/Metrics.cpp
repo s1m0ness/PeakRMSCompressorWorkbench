@@ -95,6 +95,7 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
     }
 
     auto getAndSaveMetrics = [this](CompressionMetrics& metrics, float makeup) {
+        // Signal instensity and dynamic range 
         metrics.makeup = makeup;
         metrics.meanEnergy = getAverageEnergy(*metrics.signal);
         metrics.peak = getPeakValue(*metrics.signal);
@@ -105,7 +106,6 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
 
         if (metrics.isCompressed) {
             metrics.dynamicRangeReductionCrest = getDynamicRangeReductionCrest(metrics.crestFactor);
-            metrics.dynamicRangeReductionLUFS = getDynamicRangeReductionLUFS(metrics.lufs);
             metrics.dynamicRangeReductionLRA = getDynamicRangeReductionLRA(metrics.lra);
             metrics.transientImpact = getTransientImpact(*metrics.signal);
             metrics.transientEnergyPreservation = getTransientEnergyPreservation(*metrics.signal);
@@ -127,7 +127,8 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
 
 // Signal metrics
 //==============================================================================
-float Metrics::getPeakValue(const juce::AudioBuffer<float>& buffer) {
+float Metrics::getPeakValue(const juce::AudioBuffer<float>& buffer) 
+{
     float peak = 0.0f;
     int totalSamples = buffer.getNumSamples();
     int totalChannels = buffer.getNumChannels();
@@ -207,10 +208,6 @@ float Metrics::getLRA(const juce::AudioBuffer<float>& buffer)
 
 float Metrics::getDynamicRangeReductionCrest(float compressedCrestFactor) {
     return uncompressedMetrics.crestFactor - compressedCrestFactor;  // in db
-}
-
-float Metrics::getDynamicRangeReductionLUFS(float compressedLUFS) {
-    return uncompressedMetrics.lufs - compressedLUFS; // in db
 }
 
 float Metrics::getDynamicRangeReductionLRA(float compressedLRA) {
