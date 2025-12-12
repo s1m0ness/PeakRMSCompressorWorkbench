@@ -314,7 +314,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAu
                                                            releaseRange,
                                                            250));
 
-     params.push_back(std::make_unique<AudioParameterFloat>("peak_makeup",
+    params.push_back(std::make_unique<AudioParameterFloat>("peak_makeup",
                                                             "Peak Makeup",
                                                             makeupRange,
                                                             0));

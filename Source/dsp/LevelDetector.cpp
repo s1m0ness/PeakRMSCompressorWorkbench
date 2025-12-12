@@ -81,7 +81,7 @@ double LevelDetector::getAlphaRelease()
 
 float LevelDetector::processPeakBranched(const float& in)
 {
-    //Smooth branched peak detector
+    // Smooth branched peak detector
     if (in < state01) // since peak detector is placed after gain computer, the input values are negative
         state01 = alphaAttack * state01 + (1 - alphaAttack) * in;
     else
@@ -94,7 +94,7 @@ float LevelDetector::processRMSBranched(const float& in)
 {
     float inSquared = in * in;
 
-    /*Smooth branched rms detector*/
+    // Smooth branched rms detector
     if (inSquared > state01)
         state01 = alphaAttack * state01 + (1 - alphaAttack) * inSquared;
     else

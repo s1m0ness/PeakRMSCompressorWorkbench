@@ -293,8 +293,6 @@ private:
     //==============================================================================
     bool validateSignals() const;
    
-    void downsampleBuffer(juce::AudioBuffer<float>* buffer);
-
     void applyKWeighting(juce::AudioBuffer<float>& buffer);
 
     std::vector<juce::AudioBuffer<float>> getWindowsFromBuffer(const juce::AudioBuffer<float>& buffer);
