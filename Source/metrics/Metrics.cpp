@@ -28,7 +28,7 @@
 #include <cmath>
 #include <numeric>
 
-//==============================================================================
+ //==============================================================================
 Metrics::Metrics() = default;
 
 Metrics::~Metrics() = default;
@@ -120,7 +120,7 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
             metrics.rateOfChangeGR = getRateOfChangeGainReduction(*metrics.GRSignal);
             metrics.compressionActivityRatio = getCompressionActivityRatio(*metrics.GRSignal);
         }
-    };
+        };
 
     getAndSaveMetrics(uncompressedMetrics, 0.0f);
     getAndSaveMetrics(peakMetrics, peakMakeup);
@@ -129,17 +129,17 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
 
 // 1. Signal intensity and dynamic range metrics
 //==============================================================================
-float Metrics::getPeakValue(const juce::AudioBuffer<float>& buffer) 
+float Metrics::getPeakValue(const juce::AudioBuffer<float>& buffer)
 {
-    int totalSamples = buffer.getNumSamples();
-    int totalChannels = buffer.getNumChannels();
-    
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
+
     float peak = 0.0f;
 
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* channelData = buffer.getReadPointer(channel);
-        for (int sample = 0; sample < totalSamples; ++sample) {
-            peak = std::max(peak, std::abs(channelData[sample])); // Use absolute value here.
+    for (int ch = 0; ch < numChannels; ++ch) {
+        const float* channelData = buffer.getReadPointer(ch);
+        for (int n = 0; n < numSamples; ++n) {
+            peak = std::max(peak, std::abs(channelData[n])); // Use absolute value here.
         }
     }
     return peak; // in linear gain
@@ -147,29 +147,29 @@ float Metrics::getPeakValue(const juce::AudioBuffer<float>& buffer)
 
 float Metrics::getAverageEnergy(const juce::AudioBuffer<float>& buffer)
 {
-    int totalSamples = buffer.getNumSamples();
-    int totalChannels = buffer.getNumChannels();
-    
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
+
     float meanSquare = 0.0f;
     const float silenceThreshold = 0.0001f;
 
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* channelData = buffer.getReadPointer(channel);
-        for (int sample = 0; sample < totalSamples; ++sample) {
-            if (std::abs(channelData[sample]) >= silenceThreshold) {
-                meanSquare += channelData[sample] * channelData[sample];
+    for (int ch = 0; ch < numChannels; ++ch) {
+        const float* channelData = buffer.getReadPointer(ch);
+        for (int n = 0; n < numSamples; ++n) {
+            if (std::abs(channelData[n]) >= silenceThreshold) {
+                meanSquare += channelData[n] * channelData[n];
             }
         }
     }
-    return meanSquare / static_cast<float>(totalSamples * totalChannels); // in linear gain
+    return meanSquare / static_cast<float>(numSamples * numChannels); // in linear gain
 }
 
-float Metrics::getRMSValue(float meanSquare) 
+float Metrics::getRMSValue(float meanSquare)
 {
     return std::sqrtf(meanSquare); // in linear gain
 }
 
-float Metrics::getCrestFactor(float peakValue, float rmsValue) 
+float Metrics::getCrestFactor(float peakValue, float rmsValue)
 {
     return juce::Decibels::gainToDecibels(peakValue / rmsValue); // in db
 }
@@ -192,7 +192,7 @@ float Metrics::getLRA(const juce::AudioBuffer<float>& buffer)
     applyKWeighting(kWeightedBuffer);
 
     std::vector<float> shortTermLoudness = getShortTermLoudness(kWeightedBuffer);
-    
+
     // Step 2: Calculate LRA from short-term loudness
     if (shortTermLoudness.empty())
         return 0.0f;
@@ -201,49 +201,49 @@ float Metrics::getLRA(const juce::AudioBuffer<float>& buffer)
     std::sort(shortTermLoudness.begin(), shortTermLoudness.end());
 
     // Calculate 10th and 95th percentiles
-    size_t n = shortTermLoudness.size();
-    float lowPercentile = shortTermLoudness[static_cast<size_t>(0.1 * n)];
-    float highPercentile = shortTermLoudness[static_cast<size_t>(0.95 * n)];
+    const size_t n = shortTermLoudness.size();
+    const float lowPercentile = shortTermLoudness[static_cast<size_t>(0.1 * n)];
+    const float highPercentile = shortTermLoudness[static_cast<size_t>(0.95 * n)];
 
     // LRA is defined as the difference between the high and low percentiles
     return highPercentile - lowPercentile; // in db
 }
 
-
 // 2. Compression impact metrics
 //==============================================================================
-float Metrics::getDynamicRangeReductionCrest(float compressedCrestFactor) {
+float Metrics::getDynamicRangeReductionCrest(float compressedCrestFactor)
+{
     return uncompressedMetrics.crestFactor - compressedCrestFactor;  // in db
 }
 
-float Metrics::getDynamicRangeReductionLRA(float compressedLRA) {
+float Metrics::getDynamicRangeReductionLRA(float compressedLRA)
+{
     return uncompressedMetrics.lra - compressedLRA; // in db
 }
 
 float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuffer)
 {
     // Helper: compute a simple transient strength measure
-    auto computeTransientStrength = 
-        [](const juce::AudioBuffer<float>& buffer){
-            
-            int totalSamples = buffer.getNumSamples();
-            int totalChannels = buffer.getNumChannels();
-            
-            float maxDelta = 0.0f;
+    auto computeTransientStrength =
+        [](const juce::AudioBuffer<float>& buffer) {
+        const int numSamples = buffer.getNumSamples();
+        const int numChannels = buffer.getNumChannels();
 
-            for (int channel = 0; channel < totalChannels; ++channel)
+        float maxDelta = 0.0f;
+
+        for (int ch = 0; ch < numChannels; ++ch)
+        {
+            const float* channelData = buffer.getReadPointer(ch);
+
+            for (int n = 1; n < numSamples; ++n)
             {
-                const float* channelData = buffer.getReadPointer(channel);
-#
-                for (int sample = 1; sample < totalSamples; ++sample)
-                {
-                    const float delta = std::abs(channelData[sample] - channelData[sample - 1]);
-                    if (delta > maxDelta)
-                        maxDelta = delta;
-                }
+                const float delta = std::abs(channelData[n] - channelData[n - 1]);
+                if (delta > maxDelta)
+                    maxDelta = delta;
             }
+        }
 
-            return maxDelta; // linear, 0..1-ish
+        return maxDelta; // linear, 0..1-ish
         };
 
     const float uncompressedTransients = computeTransientStrength(*uncompressedMetrics.signal);
@@ -260,7 +260,6 @@ float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuff
 
     return impact;
 }
-
 
 float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& compressedBuffer)
 {
@@ -282,24 +281,24 @@ float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& co
     compressedRMS.reserve(numWindows);
 
     // Compute short-term RMS (linear) for each window
-    for (size_t i = 0; i < numWindows; ++i)
+    for ( size_t k = 0; k < numWindows; ++k)
     {
-        float rmsUncompressed = getRMSValue(getAverageEnergy(uncompressedWindows[i]));
-        float rmsCompressed = getRMSValue(getAverageEnergy(compressedWindows[i]));
+        const float rmsUncompressed = getRMSValue(getAverageEnergy(uncompressedWindows[k]));
+        const float rmsCompressed = getRMSValue(getAverageEnergy(compressedWindows[k]));
 
         uncompressedRMS.push_back(rmsUncompressed);
         compressedRMS.push_back(rmsCompressed);
     }
 
     // Mean short-term RMS of the uncompressed signal
-    float sumUncompressedRMS = std::accumulate(uncompressedRMS.begin(),
+    const float sumUncompressedRMS = std::accumulate(uncompressedRMS.begin(),
         uncompressedRMS.end(),
         0.0f);
 
     if (sumUncompressedRMS <= 0.0f)
         return 0.0f;
 
-    float meanUncompressedRMS = sumUncompressedRMS / static_cast<float>(numWindows);
+    const float meanUncompressedRMS = sumUncompressedRMS / static_cast<float>(numWindows);
 
     // Threshold for "transient / loud" windows (in linear units)
     const float threshold = transientThresholdMultiplier * meanUncompressedRMS;
@@ -308,13 +307,13 @@ float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& co
     float uncompressedEnergy = 0.0f;
     float compressedEnergy = 0.0f;
 
-    for (size_t i = 0; i < numWindows; ++i)
+    for (size_t k = 0; k < numWindows; ++k)
     {
-        float rmsU = uncompressedRMS[i];
+        const float rmsU = uncompressedRMS[k];
 
         if (rmsU > threshold)
         {
-            float rmsC = compressedRMS[i];
+            const float rmsC = compressedRMS[k];
 
             // Energy ∝ RMS^2
             uncompressedEnergy += rmsU * rmsU;
@@ -336,22 +335,22 @@ float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& co
 
 float Metrics::getWaveformDistortion(const juce::AudioBuffer<float>& compressedBuffer)
 {
-    int totalSamples = compressedBuffer.getNumSamples();
-    int totalChannels = compressedBuffer.getNumChannels();
+    const int numSamples = compressedBuffer.getNumSamples();
+    const int numChannels = compressedBuffer.getNumChannels();
 
     const auto& originalBuffer = *uncompressedMetrics.signal;
     double originalEnergySum = 0.0;
     double errorEnergySum = 0.0;
 
-    for (int ch = 0; ch < totalChannels; ++ch)
+    for (int ch = 0; ch < numChannels; ++ch)
     {
         const float* originalData = originalBuffer.getReadPointer(ch);
         const float* compressedData = compressedBuffer.getReadPointer(ch);
 
-        for (int i = 0; i < totalSamples; ++i)
+        for (int n = 0; n < numSamples; ++n)
         {
-            const float x_u = originalData[i];
-            const float x_c = compressedData[i];
+            const float x_u = originalData[n];
+            const float x_c = compressedData[n];
             const float error = x_u - x_c;
 
             originalEnergySum += static_cast<double>(x_u) * static_cast<double>(x_u);
@@ -359,7 +358,7 @@ float Metrics::getWaveformDistortion(const juce::AudioBuffer<float>& compressedB
         }
     }
 
-    const int totalCount = totalChannels * totalSamples;
+    const int totalCount = numChannels * numSamples;
     if (totalCount <= 0)
         return 0.0f;
 
@@ -371,7 +370,7 @@ float Metrics::getWaveformDistortion(const juce::AudioBuffer<float>& compressedB
 
     const double eps = 1.0e-9;
     if (originalRms <= eps)
-        return 0.0f; 
+        return 0.0f;
 
     const double distortion = errorRms / originalRms;
     return static_cast<float>(distortion);
@@ -381,16 +380,16 @@ float Metrics::getWaveformDistortion(const juce::AudioBuffer<float>& compressedB
 //==============================================================================
 float Metrics::getMaxGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer) const
 {
-    int totalSamples = gainReductionBuffer.getNumSamples();
-    int totalChannels = gainReductionBuffer.getNumChannels();
+    const int numSamples = gainReductionBuffer.getNumSamples();
+    const int numChannels = gainReductionBuffer.getNumChannels();
 
-    float maxReduction = 0;
+    float maxReduction = 0.0f;
 
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* channelData = gainReductionBuffer.getReadPointer(channel);
-        for (int sample = 0; sample < totalSamples; ++sample) {
-            float reduction = juce::Decibels::gainToDecibels(channelData[sample]);
-            if (reduction == -100) { continue; } // ignore silence
+    for (int ch = 0; ch < numChannels; ++ch) {
+        const float* channelData = gainReductionBuffer.getReadPointer(ch);
+        for (int n = 0; n < numSamples; ++n) {
+            const float reduction = juce::Decibels::gainToDecibels(channelData[n]);
+            if (reduction == -100.0f) { continue; } // ignore silence
             maxReduction = std::min(maxReduction, reduction); // Track max = min reduction
         }
     }
@@ -399,38 +398,38 @@ float Metrics::getMaxGainReduction(const juce::AudioBuffer<float>& gainReduction
 
 float Metrics::getAverageGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer) const
 {
-    int totalSamples = gainReductionBuffer.getNumSamples();
-    int totalChannels = gainReductionBuffer.getNumChannels();
+    const int numSamples = gainReductionBuffer.getNumSamples();
+    const int numChannels = gainReductionBuffer.getNumChannels();
 
     float totalGainReduction = 0.0f;
 
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* channelData = gainReductionBuffer.getReadPointer(channel);
-        for (int sample = 0; sample < totalSamples; ++sample) {
-            float reduction = juce::Decibels::gainToDecibels(channelData[sample]);
-            if (reduction == -100) { continue; } // ignore silence
+    for (int ch = 0; ch < numChannels; ++ch) {
+        const float* channelData = gainReductionBuffer.getReadPointer(ch);
+        for (int n = 0; n < numSamples; ++n) {
+            const float reduction = juce::Decibels::gainToDecibels(channelData[n]);
+            if (reduction == -100.0f) { continue; } // ignore silence
             totalGainReduction += std::fabs(reduction);   // Sum absolute reductions
         }
     }
-    return totalGainReduction / (totalSamples * totalChannels); // in db
+    return totalGainReduction / (numSamples * numChannels); // in db
 }
 
 float Metrics::getStdDevGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer, float mean)
 {
-    int totalSamples = gainReductionBuffer.getNumSamples();
-    int totalChannels = gainReductionBuffer.getNumChannels();
+    const int numSamples = gainReductionBuffer.getNumSamples();
+    const int numChannels = gainReductionBuffer.getNumChannels();
 
     float sum = 0.0f;
 
     // Step 2: Compute the sum of squared deviations from the mean
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* channelData = gainReductionBuffer.getReadPointer(channel);
-        for (int sample = 0; sample < totalSamples; ++sample) {
-            float deviation = channelData[sample] - mean;
+    for (int ch = 0; ch < numChannels; ++ch) {
+        const float* channelData = gainReductionBuffer.getReadPointer(ch);
+        for (int n = 0; n < numSamples; ++n) {
+            const float deviation = channelData[n] - mean;
             sum += deviation * deviation;
         }
     }
-    return std::sqrt(sum / (totalSamples * totalChannels));
+    return std::sqrt(sum / (numSamples * numChannels));
 }
 
 float Metrics::getEnergyGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer)
@@ -440,36 +439,36 @@ float Metrics::getEnergyGainReduction(const juce::AudioBuffer<float>& gainReduct
 
 float Metrics::getRateOfChangeGainReduction(const juce::AudioBuffer<float>& gainReductionBuffer)
 {
-    int totalSamples = gainReductionBuffer.getNumSamples();
-    int totalChannels = gainReductionBuffer.getNumChannels();
+    const int numSamples = gainReductionBuffer.getNumSamples();
+    const int numChannels = gainReductionBuffer.getNumChannels();
 
     float sumRateOfChange = 0.0f;
 
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* channelData = gainReductionBuffer.getReadPointer(channel);
-        for (int sample = 1; sample < totalSamples; ++sample) {
-            sumRateOfChange += std::abs(channelData[sample] - channelData[sample - 1]);
+    for (int ch = 0; ch < numChannels; ++ch) {
+        const float* channelData = gainReductionBuffer.getReadPointer(ch);
+        for (int n = 1; n < numSamples; ++n) {
+            sumRateOfChange += std::abs(channelData[n] - channelData[n - 1]);
         }
     }
-    return (sumRateOfChange / ((totalSamples - 1) * totalChannels)) * sampleRate;
+    return (sumRateOfChange / ((numSamples - 1) * numChannels)) * sampleRate;
 }
 
 float Metrics::getCompressionActivityRatio(const juce::AudioBuffer<float>& gainReductionBuffer)
 {
-    int totalSamples = gainReductionBuffer.getNumSamples();
-    int totalChannels = gainReductionBuffer.getNumChannels();
+    const int numSamples = gainReductionBuffer.getNumSamples();
+    const int numChannels = gainReductionBuffer.getNumChannels();
 
     int activeSamples = 0;
 
-    for (int channel = 0; channel < totalChannels; ++channel) {
-        const float* channelData = gainReductionBuffer.getReadPointer(channel);
-        for (int sample = 0; sample < totalSamples; ++sample) {
-            if (juce::Decibels::gainToDecibels(channelData[sample]) < 0) {
+    for (int ch = 0; ch < numChannels; ++ch) {
+        const float* channelData = gainReductionBuffer.getReadPointer(ch);
+        for (int n = 0; n < numSamples; ++n) {
+            if (juce::Decibels::gainToDecibels(channelData[n]) < 0.0f) {
                 ++activeSamples;
             }
         }
     }
-    return static_cast<float>(activeSamples) / (totalSamples * totalChannels);
+    return static_cast<float>(activeSamples) / (numSamples * numChannels);
 }
 
 // Signal handling and modifications
@@ -492,13 +491,13 @@ bool Metrics::validateSignals() const
         return false;
     }
 
-    bool sameNumOfChannels =
+    const bool sameNumOfChannels =
         uncompressedMetrics.signal->getNumChannels() == peakMetrics.signal->getNumChannels() &&
         peakMetrics.signal->getNumChannels() == rmsMetrics.signal->getNumChannels() &&
         rmsMetrics.signal->getNumChannels() == peakMetrics.GRSignal->getNumChannels() &&
         peakMetrics.GRSignal->getNumChannels() == rmsMetrics.GRSignal->getNumChannels();
 
-    bool sameNumOfSamples =
+    const bool sameNumOfSamples =
         uncompressedMetrics.signal->getNumSamples() == peakMetrics.signal->getNumSamples() &&
         peakMetrics.signal->getNumSamples() == rmsMetrics.signal->getNumSamples() &&
         rmsMetrics.signal->getNumSamples() == peakMetrics.GRSignal->getNumSamples() &&
@@ -522,10 +521,10 @@ void Metrics::applyKWeighting(juce::AudioBuffer<float>& buffer)
     // Convert the buffer into a JUCE AudioBlock
     juce::dsp::AudioBlock<float> audioBlock(buffer);
 
-    for (size_t channel = 0; channel < static_cast<size_t>(audioBlock.getNumChannels()); ++channel) {
-        auto singleChannelBlock = audioBlock.getSingleChannelBlock(channel);
+    for (size_t ch = 0; ch < static_cast<size_t>(audioBlock.getNumChannels()); ++ch) {
+        auto singleChannelBlock = audioBlock.getSingleChannelBlock(ch);
         juce::dsp::ProcessContextReplacing<float> context(singleChannelBlock);
-        
+
         // Apply the filters
         lowShelfFilter.process(context);  // Apply low-shelf filter
         highShelfFilter.process(context); // Apply high-shelf filter
@@ -535,19 +534,19 @@ void Metrics::applyKWeighting(juce::AudioBuffer<float>& buffer)
 // Create windows for short-term calculations
 std::vector<juce::AudioBuffer<float>> Metrics::getWindowsFromBuffer(const juce::AudioBuffer<float>& buffer)
 {
-    int totalSamples = buffer.getNumSamples();
-    int totalChannels = buffer.getNumChannels();
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
 
     const int windowSize = static_cast<int>(windowDuration * sampleRate);
     const int hopSize = static_cast<int>(hopDuration * sampleRate);
 
     std::vector<juce::AudioBuffer<float>> windowsBuffers;
 
-    for (int startSample = 0; startSample + windowSize <= totalSamples; startSample += hopSize) {
-        juce::AudioBuffer<float> windowBuffer(totalChannels, windowSize);
-        for (int channel = 0; channel < totalChannels; ++channel) {
-            const float* source = buffer.getReadPointer(channel, startSample);
-            float* dest = windowBuffer.getWritePointer(channel);
+    for (int startSample = 0; startSample + windowSize <= numSamples; startSample += hopSize) {
+        juce::AudioBuffer<float> windowBuffer(numChannels, windowSize);
+        for (int ch = 0; ch < numChannels; ++ch) {
+            const float* source = buffer.getReadPointer(ch, startSample);
+            float* dest = windowBuffer.getWritePointer(ch);
             std::copy(source, source + windowSize, dest);
         }
         windowsBuffers.push_back(std::move(windowBuffer));
@@ -570,7 +569,7 @@ std::vector<float> Metrics::getShortTermLoudness(juce::AudioBuffer<float>& buffe
 
     // Step 2: Iterate over each window and calculate loudness
     for (const auto& windowBuffer : windowBuffers) {
-        float shortTermloudness = getIntegratedLoudness(getAverageEnergy(windowBuffer));
+        const float shortTermloudness = getIntegratedLoudness(getAverageEnergy(windowBuffer));
         shortTermLoudness.push_back(shortTermloudness);
     }
     return shortTermLoudness; // in db
