@@ -457,6 +457,8 @@ void PeakRMSCompressorWorkbenchAudioProcessor::applyPreset(int presetId)
 
 // METRICS EXTRACTION -> LOAD FULL AUDIO, COMPRESS, EXTRACT METRICS AND SAVE
 //==============================================================================
+
+// Main fuction for the extraction
 void PeakRMSCompressorWorkbenchAudioProcessor::extractMetrics() {
     
     isProcessing = true;
@@ -490,7 +492,7 @@ void PeakRMSCompressorWorkbenchAudioProcessor::extractMetrics() {
         progress = 0.6;
 
         // Set analyzed signals and compute corresponding metrics
-        extractMetricsFromSignals();
+        triggerMetricsExtraction();
 
         progress = 0.9;
 
@@ -603,7 +605,7 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBufferInChunks(juce::Audio
     }
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::extractMetricsFromSignals()
+void PeakRMSCompressorWorkbenchAudioProcessor::triggerMetricsExtraction()
 {
     metrics.setUncompressedSignal(&uncompressedSignal);
     metrics.setPeakGainReductionSignal(&peakGainReductionSignal);
@@ -651,12 +653,12 @@ void PeakRMSCompressorWorkbenchAudioProcessor::saveMetrics()
 void PeakRMSCompressorWorkbenchAudioProcessor::loadFile()
 {
     // Open file chooser to select an audio file
-    juce::FileChooser myChooser("Please select the audio track you want to compress and extract metrics from...",
+    juce::FileChooser fileChooser("Please select the audio track you want to compress and extract metrics from...",
         juce::File::getSpecialLocation(juce::File::userHomeDirectory),
         "*.mp3, *.wav");
 
-    if (myChooser.browseForFileToOpen()) {
-        selectedFile = myChooser.getResult();
+    if (fileChooser.browseForFileToOpen()) {
+        selectedFile = fileChooser.getResult();
         if (selectedFile.existsAsFile()) {
             DBG("File selected: " + selectedFile.getFullPathName());
             fileExists = true;

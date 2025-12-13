@@ -301,7 +301,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::updateParameterState()
         rmsKneeSlider.setEnabled(isRMSMode);
         rmsMakeupSlider.setEnabled(isRMSMode);
 
-        // Immediately update the compression mode
+        // Update the compression mode when the power is reset
         audioProcessor.updateCompressionMode(isRMSMode);
     } else {
         meter.setEnabled(false);
@@ -346,8 +346,8 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
         return;
     }
 
-    alreadyMuted = muteButton.getToggleState();
-    if (!alreadyMuted) {
+    isMuted = muteButton.getToggleState();
+    if (!isMuted) {
         muteButton.setToggleState(true, juce::dontSendNotification);
         audioProcessor.isMuted = true;
     }
@@ -359,7 +359,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
             juce::AlertWindow::WarningIcon,
             "Error",
             "No valid file selected. Please try again.");
-        if (!alreadyMuted) {
+        if (!isMuted) {
             muteButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.isMuted = false;
         }
@@ -367,7 +367,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
     }
 
 
-    // Lock the UI to indicate loading
+    // Lock the UI to 
     juce::MessageManager::callAsync([this]() {
         powerButton.setToggleState(false, juce::dontSendNotification);
         powerButton.setEnabled(false);
@@ -390,7 +390,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
         juce::MessageManager::callAsync([this]() {
             powerButton.setToggleState(true, juce::dontSendNotification);
             powerButton.setEnabled(true);
-            if (!alreadyMuted) {
+            if (!isMuted) {
                 muteButton.setToggleState(false, juce::dontSendNotification);
                 audioProcessor.isMuted = false;
             }

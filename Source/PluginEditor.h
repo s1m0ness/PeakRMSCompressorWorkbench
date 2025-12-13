@@ -110,7 +110,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rmsKneeAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rmsMakeupAttachment;
 
-    bool alreadyMuted; // to solve mute button on/off bugs if already toggled on during metrics extraction
+    bool isMuted; // to solve mute button on/off bugs if already toggled on during metrics extraction
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PeakRMSCompressorWorkbenchAudioProcessorEditor)
 };

@@ -135,7 +135,7 @@ public:
     * Sets uncompressed, peak compressed and rms compressed signals
     * and extracts corresponding metrics.
     */
-    void extractMetricsFromSignals();
+    void triggerMetricsExtraction();
 
     /**
     * Saves peak and rms compressed audio.
