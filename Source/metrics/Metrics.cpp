@@ -94,9 +94,10 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
         return;
     }
 
-    auto getAndSaveMetrics = [this](CompressionMetrics& metrics, float makeup) {
-        // 1. Signal instensity and dynamic range metrics
+    auto computeMetrics = [this](CompressionMetrics& metrics, float makeup) {
         metrics.makeup = makeup;
+        
+        // 1. Signal instensity and dynamic range metrics
         metrics.meanEnergy = getAverageEnergy(*metrics.signal);
         metrics.peak = getPeakValue(*metrics.signal);
         metrics.rms = getRMSValue(metrics.meanEnergy);
@@ -122,9 +123,9 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
         }
         };
 
-    getAndSaveMetrics(uncompressedMetrics, 0.0f);
-    getAndSaveMetrics(peakMetrics, peakMakeup);
-    getAndSaveMetrics(rmsMetrics, rmsMakeup);
+    computeMetrics(uncompressedMetrics, 0.0f);
+    computeMetrics(peakMetrics, peakMakeup);
+    computeMetrics(rmsMetrics, rmsMakeup);
 }
 
 // 1. Signal intensity and dynamic range metrics
@@ -471,40 +472,9 @@ float Metrics::getCompressionActivityRatio(const juce::AudioBuffer<float>& gainR
     return static_cast<float>(activeSamples) / (numSamples * numChannels);
 }
 
-// Signal handling and modifications
+
+// Signal modifications
 //==============================================================================
-bool Metrics::validateSignals() const
-{
-    if (!uncompressedMetrics.signal ||
-        !peakMetrics.signal ||
-        !rmsMetrics.signal ||
-        !peakMetrics.GRSignal ||
-        !rmsMetrics.GRSignal) {
-        return false;
-    }
-
-    if (uncompressedMetrics.signal->getNumSamples() == 0 ||
-        peakMetrics.signal->getNumSamples() == 0 ||
-        rmsMetrics.signal->getNumSamples() == 0 ||
-        peakMetrics.GRSignal->getNumSamples() == 0 ||
-        rmsMetrics.GRSignal->getNumSamples() == 0) {
-        return false;
-    }
-
-    const bool sameNumOfChannels =
-        uncompressedMetrics.signal->getNumChannels() == peakMetrics.signal->getNumChannels() &&
-        peakMetrics.signal->getNumChannels() == rmsMetrics.signal->getNumChannels() &&
-        rmsMetrics.signal->getNumChannels() == peakMetrics.GRSignal->getNumChannels() &&
-        peakMetrics.GRSignal->getNumChannels() == rmsMetrics.GRSignal->getNumChannels();
-
-    const bool sameNumOfSamples =
-        uncompressedMetrics.signal->getNumSamples() == peakMetrics.signal->getNumSamples() &&
-        peakMetrics.signal->getNumSamples() == rmsMetrics.signal->getNumSamples() &&
-        rmsMetrics.signal->getNumSamples() == peakMetrics.GRSignal->getNumSamples() &&
-        peakMetrics.GRSignal->getNumSamples() == rmsMetrics.GRSignal->getNumSamples();
-
-    return sameNumOfChannels && sameNumOfSamples;
-}
 
 // Modifies input buffer for LUFS and LRA calculations by K-weighting
 void Metrics::applyKWeighting(juce::AudioBuffer<float>& buffer)
@@ -573,4 +543,39 @@ std::vector<float> Metrics::getShortTermLoudness(juce::AudioBuffer<float>& buffe
         shortTermLoudness.push_back(shortTermloudness);
     }
     return shortTermLoudness; // in db
+}
+
+// Signal verification
+//==============================================================================
+bool Metrics::validateSignals() const
+{
+    if (!uncompressedMetrics.signal ||
+        !peakMetrics.signal ||
+        !rmsMetrics.signal ||
+        !peakMetrics.GRSignal ||
+        !rmsMetrics.GRSignal) {
+        return false;
+    }
+
+    if (uncompressedMetrics.signal->getNumSamples() == 0 ||
+        peakMetrics.signal->getNumSamples() == 0 ||
+        rmsMetrics.signal->getNumSamples() == 0 ||
+        peakMetrics.GRSignal->getNumSamples() == 0 ||
+        rmsMetrics.GRSignal->getNumSamples() == 0) {
+        return false;
+    }
+
+    const bool sameNumOfChannels =
+        uncompressedMetrics.signal->getNumChannels() == peakMetrics.signal->getNumChannels() &&
+        peakMetrics.signal->getNumChannels() == rmsMetrics.signal->getNumChannels() &&
+        rmsMetrics.signal->getNumChannels() == peakMetrics.GRSignal->getNumChannels() &&
+        peakMetrics.GRSignal->getNumChannels() == rmsMetrics.GRSignal->getNumChannels();
+
+    const bool sameNumOfSamples =
+        uncompressedMetrics.signal->getNumSamples() == peakMetrics.signal->getNumSamples() &&
+        peakMetrics.signal->getNumSamples() == rmsMetrics.signal->getNumSamples() &&
+        rmsMetrics.signal->getNumSamples() == peakMetrics.GRSignal->getNumSamples() &&
+        peakMetrics.GRSignal->getNumSamples() == rmsMetrics.GRSignal->getNumSamples();
+
+    return sameNumOfChannels && sameNumOfSamples;
 }

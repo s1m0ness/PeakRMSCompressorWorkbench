@@ -35,7 +35,7 @@ private:
         bool isRMS,
         Compressor& compressor);
 
-    void triggerMetricsExtraction();
+    void getMetrics();
     juce::String buildMetricsReport() const;
 
     float getParam(const juce::String& id) const;

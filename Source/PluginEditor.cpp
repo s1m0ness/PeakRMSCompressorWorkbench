@@ -121,7 +121,7 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
 
     // Add preset combo box and configure onClick() for applying parameters
     addAndMakeVisible(presetComboBox);
-    populatePresetComboBox();
+    fillPresetComboBox();
     presetComboBox.onChange = [this]() { handlePresetChange(); };
 
     // BUTTONS AND SLIDERS ATTACHMENTS
@@ -329,7 +329,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::updateParameterState()
     }
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessorEditor::populatePresetComboBox()
+void PeakRMSCompressorWorkbenchAudioProcessorEditor::fillPresetComboBox()
 {
     presetComboBox.clear(); // Clear existing items
 
@@ -386,6 +386,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics()
     if (extractionThread.joinable())
         extractionThread.join();
 
+    // Let the metrics extraction run in a separate thread
     extractionThread = std::thread([this, &metricsExtractionEngine, file]()
         {
             metricsExtractionEngine.run(file); // ENGINE decides validity

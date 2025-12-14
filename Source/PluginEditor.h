@@ -55,7 +55,7 @@ public:
 private:
     void timerCallback();
     void updateParameterState();
-    void populatePresetComboBox();
+    void fillPresetComboBox();
     void handleExtractMetrics();
     void handlePresetChange();
 
