@@ -33,6 +33,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <thread>
 #include "PluginProcessor.h"
 #include "gui/include/Meter.h"
 #include <../Source/util/include/Constants.h>
@@ -83,8 +84,11 @@ private:
     juce::ToggleButton muteButton;
     juce::ToggleButton rmsSwitchButton;
 
+    // For metrics extraction
     juce::TextButton extractMetricsButton;
-    juce::ProgressBar progressBar;
+    double progressValue = 0.0;
+    juce::ProgressBar progressBar{ progressValue };
+    std::thread extractionThread;
 
     MeterBackground meterbg;
     Meter meter;

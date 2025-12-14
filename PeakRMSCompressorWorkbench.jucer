@@ -7,9 +7,19 @@
   <MAINGROUP id="Nbi9PW" name="PeakRMSCompressorWorkbench">
     <GROUP id="{D9D43902-BD28-2EBF-36FE-3B6F5196BFB9}" name="metrics">
       <GROUP id="{4235B6AE-7156-39A8-E1EA-F91B8848FFBB}" name="include">
+        <FILE id="JGS6L0" name="AudioFileLoader.h" compile="0" resource="0"
+              file="Source/metrics/include/AudioFileLoader.h"/>
+        <FILE id="ScgjaE" name="DataExport.h" compile="0" resource="0" file="Source/metrics/include/DataExport.h"/>
         <FILE id="aaS9BR" name="Metrics.h" compile="0" resource="0" file="Source/metrics/include/Metrics.h"/>
+        <FILE id="qr0a53" name="MetricsExtractionEngine.h" compile="0" resource="0"
+              file="Source/metrics/include/MetricsExtractionEngine.h"/>
       </GROUP>
+      <FILE id="MCdjcB" name="AudioFileLoader.cpp" compile="1" resource="0"
+            file="Source/metrics/AudioFileLoader.cpp"/>
+      <FILE id="s13H2b" name="DataExport.cpp" compile="1" resource="0" file="Source/metrics/DataExport.cpp"/>
       <FILE id="a4BW01" name="Metrics.cpp" compile="1" resource="0" file="Source/metrics/Metrics.cpp"/>
+      <FILE id="tXyVXd" name="MetricsExtractionEngine.cpp" compile="1" resource="0"
+            file="Source/metrics/MetricsExtractionEngine.cpp"/>
     </GROUP>
     <GROUP id="{9B63E71C-3202-91A7-DCE9-2BD48DC6D209}" name="util">
       <GROUP id="{2454C16A-6257-B439-F6EE-8957025A6120}" name="include">

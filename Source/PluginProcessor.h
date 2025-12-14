@@ -31,12 +31,24 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #pragma once
 
 #include <JuceHeader.h>
+
+// For dynamic range compression
 #include <../Source/dsp/include/Compressor.h>
+
+// For metering
 #include <../Source/dsp/include/LevelEnvelopeFollower.h>
+
+// For metrics extraction
+#include <../Source/metrics/include/AudioFileLoader.h>
+#include <../Source/metrics/include/MetricsExtractionEngine.h>
+#include <../Source/metrics/include/DataExport.h>
 #include <../Source/metrics/include/Metrics.h>
+
+// Constants, presets and config
 #include <../Source/util/include/Constants.h>
 #include <../Source/util/include/Presets.h>
 #include <../Source/util/include/Config.h>
@@ -44,7 +56,7 @@
 //==============================================================================
 /**
 */
-class PeakRMSCompressorWorkbenchAudioProcessor  : public juce::AudioProcessor, 
+class PeakRMSCompressorWorkbenchAudioProcessor : public juce::AudioProcessor,
     public juce::AudioProcessorValueTreeState::Listener
 {
 public:
@@ -53,14 +65,14 @@ public:
     ~PeakRMSCompressorWorkbenchAudioProcessor() override;
 
     //==============================================================================
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
+#ifndef JucePlugin_PreferredChannelConfigurations
+    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
+#endif
 
-    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -77,18 +89,13 @@ public:
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
-    void setCurrentProgram (int index) override;
-    const juce::String getProgramName (int index) override;
-    void changeProgramName (int index, const juce::String& newName) override;
+    void setCurrentProgram(int index) override;
+    const juce::String getProgramName(int index) override;
+    void changeProgramName(int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (juce::MemoryBlock& destData) override;
-    void setStateInformation (const void* data, int sizeInBytes) override;
-    
-    // PARAMETERS HANDLING
-    //==============================================================================
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    void parameterChanged(const juce::String& parameterID, float newValue) override;
+    void getStateInformation(juce::MemoryBlock& destData) override;
+    void setStateInformation(const void* data, int sizeInBytes) override;
 
     /**
     * Updates the compressor parameters based on the selected compression mode.
@@ -98,102 +105,11 @@ public:
     */
     void updateCompressionMode(bool);
 
-    // APPLY PRESET
+
+    // PARAMETERS HANDLING
     //==============================================================================
-    /**
-    * Updates the compressor parameters based on the selected preset.
-    *
-    * @param presetId for chosen preset.
-    */
-    void applyPreset(int presetId);  
-
-    // METRICS EXTRACTION
-    //==============================================================================
-    /**
-    * Extracts metrics from the audio file.
-    * Compresses the audio, calculates metrics, and saves outputs.
-    */
-    void extractMetrics();
-
-    /**
-    * Loads user selected audio file and stores in selectedFile.
-    */
-    void loadFile();
-
-    /**
-    * Saves selected audio file into uncompressedSingal audio buffer.
-    */
-    void saveFileToBuffer();
-
-    /**
-    * Compresses the full audio buffer using both Peak and RMS compression.
-    * Outputs compressed audio and gain reduction signals.
-    */
-    void compressEntireSignal();
-
-    /**
-    * Sets uncompressed, peak compressed and rms compressed signals
-    * and extracts corresponding metrics.
-    */
-    void triggerMetricsExtraction();
-
-    /**
-    * Saves peak and rms compressed audio.
-    */
-    void saveCompressedAudio();
-
-    /**
-    * Saves extracted metrics.
-    */
-    void saveMetrics();
-
-    /**
-    * Processes the audio buffer in smaller chunks.
-    * Handles Peak and RMS compression based on the isRMS flag.
-    *
-    * @param grBuffer Gain reduction buffer to store results.
-    * @param buffer Input/output audio buffer for processing.
-    * @param chunkSize Number of samples to process per chunk.
-    * @param isRMS Flag to specify whether RMS compression is applied.
-    */
-    void processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS, Compressor compressor);
-
-    /**
-    * Saves an audio buffer to a .wav file.
-    * Handles file creation, writing, and deletion of existing files.
-    *
-    * @param buffer Audio buffer to save.
-    * @param compressedAudioFile Output file for saving the audio buffer.
-    */
-    void SaveCompressedAudioToFile(const juce::AudioBuffer<float>& buffer, const juce::File& compressedAudioFile);
-
-    /**
-    * Saves metrics content to a .txt file.
-    * Handles file creation, directory validation, and overwriting.
-    *
-    * @param metricsContent Metrics data as a formatted string.
-    * @param metricsFile Output file for saving the metrics content.
-    */
-    void saveMetricsToFile(const juce::String& metricsContent, const juce::File& metricsFile);
-
-    //==============================================================================
-    juce::AudioProcessorValueTreeState parameters;
-    
-    std::atomic<float> gainReduction;
-    std::atomic<float> currentInput;
-    std::atomic<float> currentOutput;
-
-    Compressor peakCompressor;
-    Compressor rmsCompressor;
-
-    bool isRMSMode{ false };
-    bool isMuted{ false };
-
-    std::atomic<bool> isProcessing{ false };
-    std::thread processingThread; // Thread for background processing
-    bool fileExists = false;
-
-    double progress{ 0.0 }; // Thread-safe progress value
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    void parameterChanged(const juce::String& parameterID, float newValue) override;
 
     // Getter for acquiring preset parameter values 
     float getParameterValue(const juce::String& paramID) const {
@@ -204,33 +120,60 @@ public:
         return 0.0f;
     }
 
+    // APPLY PRESET
+    //==============================================================================
+    /**
+    * Updates the compressor parameters based on the selected preset.
+    *
+    * @param presetId for chosen preset.
+    */
+    void applyPreset(int presetId);
+
+    //==============================================================================
+    juce::AudioProcessorValueTreeState parameters;
+
+    std::atomic<float> gainReduction;
+    std::atomic<float> currentInput;
+    std::atomic<float> currentOutput;
+
+    Compressor peakCompressor;
+    Compressor rmsCompressor;
+
+    bool isRMSMode{ false };
+    bool isMuted{ false };
+
     std::map<int, PresetStruct> createPresetParameters();
     std::map<int, PresetStruct> PresetParameters;
 
-private:
-    juce::File createUniqueFile(const juce::String& label, const juce::String& extension);
-    void createFolderForSaving();
+    MetricsExtractionEngine& getMetricsExtractionEngine() { 
+        return metricsExtractionEngine;
+    }
     
-    juce::String formatParameterValues(bool isRMS);
+    AudioFileLoader& getAudioFileLoader() {
+        return audioFileLoader;
+    }
 
-
+private:
     //==============================================================================
     LevelEnvelopeFollower inLevelFollower;
     LevelEnvelopeFollower outLevelFollower;
-    
+
     juce::AudioFormatManager formatManager; // Handles audio format readers
-    
+
+
+    //==============================================================================
     juce::File outputDirectory = juce::File(Config::OutputPath::path);
 
-    // Files for metrics extraction
-    bool saveFiles = Config::saveCompressedFiles::save;
-    juce::File selectedFile;
-    juce::AudioBuffer<float> uncompressedSignal;  // contains the entire audio signal
-    juce::AudioBuffer<float> peakCompressedSignal, 
-                             rmsCompressedSignal, 
-                             rmsGainReductionSignal,
-                             peakGainReductionSignal;
+    juce::AudioBuffer<float> peakCompressedSignal,
+        rmsCompressedSignal,
+        rmsGainReductionSignal,
+        peakGainReductionSignal;
     Metrics metrics;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PeakRMSCompressorWorkbenchAudioProcessor)
+    // Metrics extraction pipeline
+    AudioFileLoader audioFileLoader;
+    DataExport dataExport;
+    MetricsExtractionEngine metricsExtractionEngine;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PeakRMSCompressorWorkbenchAudioProcessor)
 };

@@ -9,7 +9,7 @@
  * - Saves compressed audio outputs and extracted metrics to user-defined locations.
  *
  * Additional Features:
- * - Extends the basic JUCE framework to include metrics extraction functionality, enabling analysis 
+ * - Extends the basic JUCE framework to include metrics extraction functionality, enabling analysis
  *   of dynamic range compression applied on audio signal, using peak-based or RMS-based level detection.
  *
  * NOTE: This implementation integrates with the JUCE AudioProcessor API and follows its standard plugin structure.
@@ -35,18 +35,34 @@
 #include "PluginEditor.h"
 
 
-//==============================================================================
+ //==============================================================================
 PeakRMSCompressorWorkbenchAudioProcessor::PeakRMSCompressorWorkbenchAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       ),
-    parameters(*this, nullptr, "PARAMETERS", createParameterLayout())
+    : AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+        .withInput("Input", juce::AudioChannelSet::stereo(), true)
+#endif
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+    ),
+    parameters(*this, nullptr, "PARAMETERS", createParameterLayout()),
+    audioFileLoader(formatManager),
+    dataExport(DataExport::Config{
+        juce::File(Config::OutputPath::path),
+        "PeakRMSCompressorWorkbench_testing_results",
+        24,
+        Config::saveCompressedFiles::save
+        }),
+    metricsExtractionEngine(
+        audioFileLoader,
+        dataExport,
+        peakCompressor,
+        rmsCompressor,
+        metrics,
+        parameters,
+        MetricsExtractionEngine::Config{ 1024, 20 }
+    )
 #endif
 {
     parameters.addParameterListener("power", this);
@@ -74,7 +90,6 @@ PeakRMSCompressorWorkbenchAudioProcessor::PeakRMSCompressorWorkbenchAudioProcess
     formatManager.registerBasicFormats();
 }
 
-
 PeakRMSCompressorWorkbenchAudioProcessor::~PeakRMSCompressorWorkbenchAudioProcessor()
 {
 }
@@ -87,29 +102,29 @@ const juce::String PeakRMSCompressorWorkbenchAudioProcessor::getName() const
 
 bool PeakRMSCompressorWorkbenchAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool PeakRMSCompressorWorkbenchAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool PeakRMSCompressorWorkbenchAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double PeakRMSCompressorWorkbenchAudioProcessor::getTailLengthSeconds() const
@@ -120,7 +135,7 @@ double PeakRMSCompressorWorkbenchAudioProcessor::getTailLengthSeconds() const
 int PeakRMSCompressorWorkbenchAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    // so this should be at least 1, even if you're not really implementing programs.
 }
 
 int PeakRMSCompressorWorkbenchAudioProcessor::getCurrentProgram()
@@ -128,16 +143,16 @@ int PeakRMSCompressorWorkbenchAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::setCurrentProgram (int index)
+void PeakRMSCompressorWorkbenchAudioProcessor::setCurrentProgram(int index)
 {
 }
 
-const juce::String PeakRMSCompressorWorkbenchAudioProcessor::getProgramName (int index)
+const juce::String PeakRMSCompressorWorkbenchAudioProcessor::getProgramName(int index)
 {
     return {};
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void PeakRMSCompressorWorkbenchAudioProcessor::changeProgramName(int index, const juce::String& newName)
 {
 }
 
@@ -147,7 +162,7 @@ void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, 
 {
     peakCompressor.prepare({ sampleRate, static_cast<uint32>(samplesPerBlock), 2 });
     rmsCompressor.prepare({ sampleRate, static_cast<uint32>(samplesPerBlock), 2 });
-    
+
     inLevelFollower.prepare(sampleRate);
     outLevelFollower.prepare(sampleRate);
     inLevelFollower.setPeakDecay(0.3f);
@@ -164,28 +179,28 @@ void PeakRMSCompressorWorkbenchAudioProcessor::releaseResources()
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool PeakRMSCompressorWorkbenchAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool PeakRMSCompressorWorkbenchAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
+#if JucePlugin_IsMidiEffect
+    juce::ignoreUnused(layouts);
     return true;
-  #else
+#else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
     // Some plugin hosts, such as certain GarageBand versions, will only
     // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
     // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+#if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
+#endif
 
     return true;
-  #endif
+#endif
 }
 #endif
 
@@ -211,7 +226,8 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<fl
         peakCompressor.process(buffer, isRMSMode);
         // Get max. gain reduction for peak value for gain reduction metering
         gainReduction = peakCompressor.getMaxGainReduction();
-    } else {
+    }
+    else {
         // Apply rms compression
         rmsCompressor.process(buffer, isRMSMode);
         // Get max. gain reduction value for rms for gain reduction metering
@@ -223,7 +239,7 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<fl
     currentOutput = Decibels::gainToDecibels(outLevelFollower.getPeak());
 
     if (isMuted) {
-        buffer.clear(); // Silence the audio
+        buffer.clear(); // Silence the processed audio
         return;
 
     }
@@ -242,14 +258,14 @@ juce::AudioProcessorEditor* PeakRMSCompressorWorkbenchAudioProcessor::createEdit
 }
 
 //==============================================================================
-void PeakRMSCompressorWorkbenchAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void PeakRMSCompressorWorkbenchAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void PeakRMSCompressorWorkbenchAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -266,91 +282,91 @@ juce::AudioProcessorValueTreeState::ParameterLayout PeakRMSCompressorWorkbenchAu
     params.push_back(std::make_unique<juce::AudioParameterBool>("isRMS", "Use RMS Detection", false));
 
     auto thresholdRange = NormalisableRange<float>(Constants::Parameter::thresholdStart,
-                                                   Constants::Parameter::thresholdEnd, 
-                                                   Constants::Parameter::thresholdInterval);
+        Constants::Parameter::thresholdEnd,
+        Constants::Parameter::thresholdInterval);
 
     auto ratioRange = NormalisableRange<float>(Constants::Parameter::ratioStart,
-                                               Constants::Parameter::ratioEnd,
-                                               Constants::Parameter::ratioInterval);
-   
+        Constants::Parameter::ratioEnd,
+        Constants::Parameter::ratioInterval);
+
     auto kneeRange = NormalisableRange<float>(Constants::Parameter::kneeStart,
-                                              Constants::Parameter::kneeEnd, 
-                                              Constants::Parameter::kneeInterval);
+        Constants::Parameter::kneeEnd,
+        Constants::Parameter::kneeInterval);
 
     auto makeupRange = NormalisableRange<float>(Constants::Parameter::makeupStart,
-                                                Constants::Parameter::makeupEnd, 
-                                                Constants::Parameter::makeupInterval);
+        Constants::Parameter::makeupEnd,
+        Constants::Parameter::makeupInterval);
 
-    auto attackRange = NormalisableRange<float>(Constants::Parameter::attackStart, 
-                                                Constants::Parameter::attackEnd, 
-                                                Constants::Parameter::attackInterval);
+    auto attackRange = NormalisableRange<float>(Constants::Parameter::attackStart,
+        Constants::Parameter::attackEnd,
+        Constants::Parameter::attackInterval);
 
-    auto releaseRange = NormalisableRange<float>(Constants::Parameter::releaseStart, 
-                                                 Constants::Parameter::releaseEnd, 
-                                                 Constants::Parameter::releaseInterval);
-    
+    auto releaseRange = NormalisableRange<float>(Constants::Parameter::releaseStart,
+        Constants::Parameter::releaseEnd,
+        Constants::Parameter::releaseInterval);
+
     params.push_back(std::make_unique<AudioParameterFloat>("peak_threshold",
-                                                           "Peak Threshold",
-                                                            thresholdRange,
-                                                            0));
+        "Peak Threshold",
+        thresholdRange,
+        0));
 
     params.push_back(std::make_unique<AudioParameterFloat>("peak_ratio",
-                                                           "Peak Ratio",
-                                                            ratioRange,
-                                                            3));
+        "Peak Ratio",
+        ratioRange,
+        3));
 
     params.push_back(std::make_unique<AudioParameterFloat>("peak_knee",
-                                                           "Peak Knee",
-                                                            kneeRange,
-                                                            0));
+        "Peak Knee",
+        kneeRange,
+        0));
 
     params.push_back(std::make_unique<AudioParameterFloat>("peak_attack",
-                                                           "Peak Attack",
-                                                            attackRange,
-                                                            50));
+        "Peak Attack",
+        attackRange,
+        50));
 
     params.push_back(std::make_unique<AudioParameterFloat>("peak_release",
-                                                           "Peak Release",
-                                                           releaseRange,
-                                                           250));
+        "Peak Release",
+        releaseRange,
+        250));
 
     params.push_back(std::make_unique<AudioParameterFloat>("peak_makeup",
-                                                            "Peak Makeup",
-                                                            makeupRange,
-                                                            0));
+        "Peak Makeup",
+        makeupRange,
+        0));
 
-    
+
     params.push_back(std::make_unique<AudioParameterFloat>("rms_threshold",
-                                                           "RMS Threshold",
-                                                            thresholdRange,
-                                                            0));
+        "RMS Threshold",
+        thresholdRange,
+        0));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_ratio",
-                                                           "RMS Ratio",
-                                                            ratioRange,
-                                                            3));
+        "RMS Ratio",
+        ratioRange,
+        3));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_knee",
-                                                           "RMS Knee",
-                                                            kneeRange,
-                                                            0));
+        "RMS Knee",
+        kneeRange,
+        0));
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_makeup",
-                                                           "RMS Makeup",
-                                                            makeupRange,
-                                                            0));
+        "RMS Makeup",
+        makeupRange,
+        0));
 
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_attack",
-                                                           "RMS Attack",
-                                                           attackRange,
-                                                           50));
+        "RMS Attack",
+        attackRange,
+        50));
 
 
     params.push_back(std::make_unique<AudioParameterFloat>("rms_release",
-                                                           "RMS Release",
-                                                           releaseRange,
-                                                           250));
+        "RMS Release",
+        releaseRange,
+        250));
     return { params.begin(), params.end() };
 }
 
@@ -389,7 +405,8 @@ void PeakRMSCompressorWorkbenchAudioProcessor::updateCompressionMode(bool isRMSM
         rmsCompressor.setRelease(*parameters.getRawParameterValue("rms_release"));
         rmsCompressor.setKnee(*parameters.getRawParameterValue("rms_knee"));
         rmsCompressor.setMakeup(*parameters.getRawParameterValue("rms_makeup"));
-    } else {
+    }
+    else {
         peakCompressor.setThreshold(*parameters.getRawParameterValue("peak_threshold"));
         peakCompressor.setRatio(*parameters.getRawParameterValue("peak_ratio"));
         peakCompressor.setAttack(*parameters.getRawParameterValue("peak_attack"));
@@ -440,324 +457,21 @@ void PeakRMSCompressorWorkbenchAudioProcessor::applyPreset(int presetId)
         auto setParameter = [this](const juce::String& paramID, float value) {
             if (auto* parameter = parameters.getParameter(paramID)) {
                 parameter->setValueNotifyingHost(parameters.getParameterRange(paramID).convertTo0to1(value));
-            } else {
+            }
+            else {
                 DBG("Parameter not found: " + paramID);
             }
-        };
+            };
 
         // Iterate over the parameters map and apply each parameter
         for (const auto& param : parametersMap) {
             setParameter(param.first, param.second);
         }
         DBG("Preset '" + juce::String(preset.name) + "' (ID: " + juce::String(presetId) + ") applied successfully.");
-    } else {
+    }
+    else {
         DBG("Error: Preset ID " + juce::String(presetId) + " does not exist.");
     }
-}
-
-// METRICS EXTRACTION -> LOAD FULL AUDIO, COMPRESS, EXTRACT METRICS AND SAVE
-//==============================================================================
-
-// Main fuction for the extraction
-void PeakRMSCompressorWorkbenchAudioProcessor::extractMetrics() {
-    
-    isProcessing = true;
-    
-    // the file is loaded separately in PluginEditor
-    try {
-        if (!fileExists) {
-            isProcessing = false;
-            return;
-        }
-
-        progress = 0.0;
-
-        // Save entire audio signal to a single buffer
-        saveFileToBuffer();
-
-        progress = 0.1;
-
-        // Process the audio signal with peak and rms compression
-        compressEntireSignal();
-
-        progress = 0.5;
-
-        createFolderForSaving(); // create testing folder for saving metrics and compressed audio signals
-
-        if (saveFiles) {
-            // Save compressed audio signals in .wav
-            saveCompressedAudio();
-        }
-
-        progress = 0.6;
-
-        // Set analyzed signals and compute corresponding metrics
-        triggerMetricsExtraction();
-
-        progress = 0.9;
-
-        // Save metrics data in .txt
-        saveMetrics();
-
-        progress = 1;
-
-    } catch (std::exception& e) {
-        DBG("Metrics extraction failed: " + juce::String(e.what()));
-    } catch (...) {
-        DBG("Unknown error during metrics extraction.");
-    }
-
-    isProcessing = false;
-}
-
-// FUNCTIONS FOR FACILIATING extractMetrics() FUNCTIONALITY
-//==============================================================================
-void PeakRMSCompressorWorkbenchAudioProcessor::saveFileToBuffer()
-{
-    uncompressedSignal.clear(); // Clear the buffer before loading
-
-    // Create reader for the selected file
-    std::unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(selectedFile));
-
-    if (reader != nullptr) {
-        juce::AudioBuffer<float> tempBuffer;
-        tempBuffer.setSize(reader->numChannels, static_cast<int>(reader->lengthInSamples));
-        reader->read(&tempBuffer, 0, static_cast<int>(reader->lengthInSamples), 0, true, true);
-        uncompressedSignal = std::move(tempBuffer);
-
-        DBG("File successfully loaded: " + selectedFile.getFullPathName());
-    } else {
-        DBG("Error: Unable to read the file: " + selectedFile.getFullPathName());
-    }
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::compressEntireSignal()
-{
-    jassert(uncompressedSignal.getNumSamples() > 0);
-
-    const auto numSamples = uncompressedSignal.getNumSamples();
-    const auto numChannels = uncompressedSignal.getNumChannels();
-        
-    peakCompressedSignal.clear();
-    peakGainReductionSignal.clear();
-    rmsCompressedSignal.clear();
-    rmsGainReductionSignal.clear();
-
-    // Limit buffer size for processing
-    const int maxSamples = 44100 * 60 * 20; // max. 20 minutes of audio at 44.1kHz
-    if (numSamples > maxSamples) {
-        uncompressedSignal.setSize(numChannels, maxSamples, true, true, true);
-    }
-
-    // Ensure buffers are properly sized
-    peakCompressedSignal.setSize(numChannels, numSamples, false, true, true);
-    peakGainReductionSignal.setSize(numChannels, numSamples, false, true, true);
-    rmsCompressedSignal.setSize(numChannels, numSamples, false, true, true);
-    rmsGainReductionSignal.setSize(numChannels, numSamples, false, true, true);
-
-    // Copy data to buffers
-    peakCompressedSignal.makeCopyOf(uncompressedSignal);
-    rmsCompressedSignal.makeCopyOf(uncompressedSignal);
-
-    // Process the buffers in chunks to reduce memory usage
-    processBufferInChunks(peakGainReductionSignal, peakCompressedSignal, 1024, false, peakCompressor); // Chunk size of 1024 samples
-    processBufferInChunks(rmsGainReductionSignal, rmsCompressedSignal, 1024, true, rmsCompressor);
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::processBufferInChunks(juce::AudioBuffer<float>& grBuffer, juce::AudioBuffer<float>& buffer, int chunkSize, bool isRMS, Compressor compressor)
-{
-    const int numSamples = buffer.getNumSamples();
-    const int numChannels = buffer.getNumChannels();
-
-    compressor.resizeSignals(chunkSize);
-
-    for (int startSample = 0; startSample < numSamples; startSample += chunkSize) {
-        const int numSamplesToProcess = std::min(chunkSize, numSamples - startSample);
-
-        // Skip empty chunks
-        if (numSamplesToProcess <= 0) {
-            continue;
-        }
-
-        juce::AudioBuffer<float> chunkBuffer;
-        chunkBuffer.setSize(numChannels, numSamplesToProcess, false, true, true);
-
-        for (int channel = 0; channel < numChannels; ++channel) {
-            chunkBuffer.copyFrom(channel, 0, buffer, channel, startSample, numSamplesToProcess);
-        }
-
-        // Apply either peak or rms compression to the chunk
-        if (isRMS) {
-            compressor.applyRMSCompression(chunkBuffer, numSamplesToProcess, numChannels, true);
-        } else {
-            compressor.applyPeakCompression(chunkBuffer, numSamplesToProcess, numChannels, true);
-        }
-
-        // save gainReductionSignal
-        for (int channel = 0; channel < numChannels; ++channel) {
-            grBuffer.copyFrom(channel, startSample, compressor.getGainReductionSignal(), channel, 0, numSamplesToProcess);
-        }
-
-        // Copy processed chunk back into the main buffer
-        for (int channel = 0; channel < numChannels; ++channel) {
-            buffer.copyFrom(channel, startSample, chunkBuffer, channel, 0, numSamplesToProcess);
-        }
-    }
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::triggerMetricsExtraction()
-{
-    metrics.setUncompressedSignal(&uncompressedSignal);
-    metrics.setPeakGainReductionSignal(&peakGainReductionSignal);
-    metrics.setPeakCompressedSignal(&peakCompressedSignal);
-    metrics.setRMSGainReductionSignal(&rmsGainReductionSignal);
-    metrics.setRMSCompressedSignal(&rmsCompressedSignal);
-
-    metrics.extractMetrics(getParameterValue("peak_makeup"), getParameterValue("rms_makeup"));
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::saveCompressedAudio()
-{
-    // Define output file for compressed signals
-    juce::File peakOutputFile = createUniqueFile("Peak_compressed", ".wav");
-    juce::File rmsOutputFile = createUniqueFile("RMS_compressed", ".wav");
-
-    SaveCompressedAudioToFile(peakCompressedSignal, peakOutputFile);
-    SaveCompressedAudioToFile(rmsCompressedSignal, rmsOutputFile);
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::saveMetrics()
-{
-    // Define output file for metric
-    juce::File metricsOutputFile = createUniqueFile("Metrics", ".txt");
-    
-    // Get metrics for all signals
-    const auto& uncompressed = metrics.getUncompressedMetrics();
-    const auto& peak = metrics.getPeakMetrics();
-    const auto& rms = metrics.getRMSMetrics();
-
-    // Create the metrics content
-    juce::String metricsContent;
-    metricsContent << "Metrics Summary for: " << selectedFile.getFileName() << "\n\n";
-    metricsContent << uncompressed.formatMetrics();
-    metricsContent << formatParameterValues(false);
-    metricsContent << peak.formatMetrics();
-    metricsContent << formatParameterValues(true);
-    metricsContent << rms.formatMetrics();
-    
-    saveMetricsToFile(metricsContent, metricsOutputFile);
-}
-
-// ADITIONAL FUNCTIONS (FILE LOADING AND SAVING ON USER'S SYSTEM)
-//==============================================================================
-void PeakRMSCompressorWorkbenchAudioProcessor::loadFile()
-{
-    // Open file chooser to select an audio file
-    juce::FileChooser fileChooser("Please select the audio track you want to compress and extract metrics from...",
-        juce::File::getSpecialLocation(juce::File::userHomeDirectory),
-        "*.mp3, *.wav");
-
-    if (fileChooser.browseForFileToOpen()) {
-        selectedFile = fileChooser.getResult();
-        if (selectedFile.existsAsFile()) {
-            DBG("File selected: " + selectedFile.getFullPathName());
-            fileExists = true;
-        }
-        else {
-            DBG("Selected file does not exist.");
-            fileExists = false;
-        }
-    } else {
-        DBG("File selection was canceled.");
-        fileExists = false;
-    }
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::SaveCompressedAudioToFile(const juce::AudioBuffer<float>& buffer, const juce::File& compressedAudioFile)
-{
-    juce::WavAudioFormat format;
-    std::unique_ptr<AudioFormatWriter> writer;
-
-    writer.reset(format.createWriterFor(new FileOutputStream(compressedAudioFile),
-        44100,
-        buffer.getNumChannels(),
-        24,
-        {},
-        0));
-
-    if (writer != nullptr) {
-        writer->writeFromAudioSampleBuffer(buffer, 0, buffer.getNumSamples());
-    }
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::saveMetricsToFile(const juce::String& metricsContent, const juce::File& metricsFile)
-{
-    // Create and write to the file
-    std::unique_ptr<juce::FileOutputStream> stream(metricsFile.createOutputStream());
-    if (stream != nullptr) {
-        *stream << metricsContent;
-        stream->flush();
-        DBG("Metrics saved to: " + metricsFile.getFullPathName());
-    } else {
-        DBG("Failed to save metrics to: " + metricsFile.getFullPathName());
-    }
-}
-
-// MISC. FUNCTIONS
-//==============================================================================
-juce::File PeakRMSCompressorWorkbenchAudioProcessor::createUniqueFile(const juce::String& fileName, const juce::String& extension)
-{
-    juce::File baseFile = outputDirectory.getChildFile(selectedFile.getFileNameWithoutExtension() 
-                                                       + "_" + fileName + extension);
-
-    juce::File uniqueFile = baseFile;
-    int counter = 2;
-
-    while (uniqueFile.existsAsFile()) {
-        uniqueFile = baseFile;
-        juce::String newName = uniqueFile.getFileNameWithoutExtension()
-            + "_" + juce::String(counter) + extension;
-        uniqueFile = uniqueFile.getParentDirectory().getChildFile(newName);
-        ++counter;
-    }
-    return uniqueFile;
-}
-
-void PeakRMSCompressorWorkbenchAudioProcessor::createFolderForSaving()
-{
-    juce::File baseDirectory = juce::File(Config::OutputPath::path);
-    juce::File testingFolder = baseDirectory.getChildFile("PeakRMSCompressorWorkbench_testing_results");
-
-    if (!testingFolder.exists()) {
-        if (!testingFolder.createDirectory()) {
-            return;
-        }
-    }
-    outputDirectory = testingFolder;
-}
-
-juce::String PeakRMSCompressorWorkbenchAudioProcessor::formatParameterValues(bool isRMS)
-{
-    juce::String content;
-    if (!isRMS) {
-        content << "Compression parameter values for peak detection:\n";
-        content << "Threshold: " << *parameters.getRawParameterValue("peak_threshold") << ", ";
-        content << "Ratio: " << *parameters.getRawParameterValue("peak_ratio") << ", ";
-        content << "Knee: " << *parameters.getRawParameterValue("peak_knee") << ", ";
-        content << "Attack: " << *parameters.getRawParameterValue("peak_attack") << ", ";
-        content << "Release: " << *parameters.getRawParameterValue("peak_release") << ", ";
-        content << "Makeup Gain: " << *parameters.getRawParameterValue("peak_makeup") << ".";
-    } else {
-        content << "Compression parameter values for rms detection:\n";
-        content << "Threshold: " << *parameters.getRawParameterValue("rms_threshold") << ", ";
-        content << "Ratio: " << *parameters.getRawParameterValue("rms_ratio") << ", ";
-        content << "Knee: " << *parameters.getRawParameterValue("rms_knee") << ", ";
-        content << "Attack: " << *parameters.getRawParameterValue("rms_attack") << ", ";
-        content << "Release: " << *parameters.getRawParameterValue("rms_release") << ", ";
-        content << "Makeup Gain: " << *parameters.getRawParameterValue("rms_makeup") << ".";
-    } 
-    content << "\n";
-    return content;
 }
 
 //==============================================================================

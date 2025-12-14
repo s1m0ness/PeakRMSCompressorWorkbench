@@ -37,8 +37,8 @@
 PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioProcessorEditor(
     PeakRMSCompressorWorkbenchAudioProcessor& p, 
     juce::AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts), 
-    progressBar(p.progress)
+    : AudioProcessorEditor(&p), audioProcessor(p), valueTreeState(vts),
+    progressBar(progressValue)
 
 {
     // BUTTONS AND SLIDERS
@@ -272,6 +272,8 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::timerCallback()
     default:
         break;
     }
+
+    progressValue = audioProcessor.getMetricsExtractionEngine().getProgress();
     progressBar.repaint();
 }
 
@@ -337,81 +339,83 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::populatePresetComboBox()
     presetComboBox.setSelectedId(0, juce::dontSendNotification); // Default to "None"
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics() {
-    if (audioProcessor.isProcessing) {
+void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics()
+{
+    auto& metricsExtractionEngine = audioProcessor.getMetricsExtractionEngine();
+    auto& fileLoader = audioProcessor.getAudioFileLoader();
+
+    if (metricsExtractionEngine.isProcessing())
+    {
         juce::AlertWindow::showMessageBoxAsync(
             juce::AlertWindow::WarningIcon,
             "Processing",
-            "Metrics extraction is already in progress.");
+            "Metrics extraction is already running.");
         return;
     }
 
     isMuted = muteButton.getToggleState();
-    if (!isMuted) {
+    if (!isMuted)
+    {
         muteButton.setToggleState(true, juce::dontSendNotification);
         audioProcessor.isMuted = true;
     }
 
-    // Call loadFile directly on the main thread
-    audioProcessor.loadFile();
-    if (!audioProcessor.fileExists) {
-        juce::AlertWindow::showMessageBoxAsync(
-            juce::AlertWindow::WarningIcon,
-            "Error",
-            "No valid file selected. Please try again.");
-        if (!isMuted) {
+    auto file = fileLoader.chooseAudioFile();
+
+    if (!file.existsAsFile())
+    {
+        if (!isMuted)
+        {
             muteButton.setToggleState(false, juce::dontSendNotification);
             audioProcessor.isMuted = false;
         }
         return;
     }
 
+    // Lock UI
+    powerButton.setToggleState(false, juce::dontSendNotification);
+    powerButton.setEnabled(false);
+    updateParameterState();
 
-    // Lock the UI to 
-    juce::MessageManager::callAsync([this]() {
-        powerButton.setToggleState(false, juce::dontSendNotification);
-        powerButton.setEnabled(false);
-        updateParameterState();
-        audioProcessor.peakCompressor.setPower(true);
-        audioProcessor.rmsCompressor.setPower(true);
-        progressBar.setVisible(true);
+    audioProcessor.peakCompressor.setPower(true);
+    audioProcessor.rmsCompressor.setPower(true);
+
+    progressBar.setVisible(true);
+    progressValue = 0.0;
+
+    if (extractionThread.joinable())
+        extractionThread.join();
+
+    extractionThread = std::thread([this, &metricsExtractionEngine, file]()
+        {
+            metricsExtractionEngine.run(file); // ENGINE decides validity
+
+            juce::MessageManager::callAsync([this]()
+                {
+                    powerButton.setToggleState(true, juce::dontSendNotification);
+                    powerButton.setEnabled(true);
+
+                    if (!isMuted)
+                    {
+                        muteButton.setToggleState(false, juce::dontSendNotification);
+                        audioProcessor.isMuted = false;
+                    }
+
+                    updateParameterState();
+
+                    audioProcessor.peakCompressor.setPower(false);
+                    audioProcessor.rmsCompressor.setPower(false);
+
+                    progressBar.setVisible(false);
+
+                    juce::AlertWindow::showMessageBoxAsync(
+                        juce::AlertWindow::InfoIcon,
+                        "Done",
+                        "Metrics extraction finished.");
+                });
         });
-
-    // Start metrics extraction in a background thread
-    audioProcessor.processingThread = std::thread([this]() {
-        try {
-            audioProcessor.extractMetrics();
-        }
-        catch (...) {
-            DBG("Exception during extraction.");
-        }
-
-        // Unlock the UI after completion
-        juce::MessageManager::callAsync([this]() {
-            powerButton.setToggleState(true, juce::dontSendNotification);
-            powerButton.setEnabled(true);
-            if (!isMuted) {
-                muteButton.setToggleState(false, juce::dontSendNotification);
-                audioProcessor.isMuted = false;
-            }
-            updateParameterState();
-            audioProcessor.peakCompressor.setPower(false);
-            audioProcessor.rmsCompressor.setPower(false);
-            progressBar.setVisible(false);
-
-            // Add the success popup window here
-            juce::AlertWindow::showMessageBoxAsync(
-                juce::AlertWindow::InfoIcon,
-                "Success",
-                "Metrics have been successfully extracted");
-            });
-        });
-
-    // Check if thread is valid before detaching
-    if (audioProcessor.processingThread.joinable()) {
-        audioProcessor.processingThread.detach();
     }
-}
+
 
 void PeakRMSCompressorWorkbenchAudioProcessorEditor::handlePresetChange() {
     int selectedPresetId = presetComboBox.getSelectedId();
