@@ -252,8 +252,6 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::resized()
     addSliderAndLabel(rightColumn, rmsMakeupLabel, rmsMakeupSlider, labelWidth);
 }
 
-// ADDITIONAL FUNCTIONS
-//==============================================================================
 
 void PeakRMSCompressorWorkbenchAudioProcessorEditor::timerCallback()
 {
@@ -277,6 +275,18 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::timerCallback()
     progressBar.repaint();
 }
 
+void PeakRMSCompressorWorkbenchAudioProcessorEditor::fillPresetComboBox()
+{
+    presetComboBox.clear(); // Clear existing items
+
+    for (const auto& [presetId, preset] : audioProcessor.PresetParameters) {
+        presetComboBox.addItem(preset.name, presetId); // Use name and id
+    }
+    presetComboBox.setSelectedId(0, juce::dontSendNotification); // Default to "None"
+}
+
+// User interaction with GUI elements
+//==============================================================================
 void PeakRMSCompressorWorkbenchAudioProcessorEditor::updateParameterState()
 {
     if (powerButton.getToggleState()) {
@@ -329,15 +339,6 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::updateParameterState()
     }
 }
 
-void PeakRMSCompressorWorkbenchAudioProcessorEditor::fillPresetComboBox()
-{
-    presetComboBox.clear(); // Clear existing items
-
-    for (const auto& [presetId, preset] : audioProcessor.PresetParameters) {
-        presetComboBox.addItem(preset.name, presetId); // Use name and id
-    }
-    presetComboBox.setSelectedId(0, juce::dontSendNotification); // Default to "None"
-}
 
 void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics()
 {
