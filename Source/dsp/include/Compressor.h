@@ -99,7 +99,8 @@ public:
     */
     void applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, bool trackGR);
 
-    void resizeSignals(int numSamples);
+    void prepareForMetricsExtraction(const juce::dsp::ProcessSpec& audioFilePs);
+    void prepareForRealTimeProcessing();
 
 private:
     //==============================================================================
@@ -109,7 +110,6 @@ private:
 
     void saveGainReductionSignal(int numSamples, int numChannels);
    
-    void resetSizeSignals();
 
     //Directly initialize process spec to avoid debugging problems
     juce::dsp::ProcessSpec procSpec{ -1, 0, 0 };

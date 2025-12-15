@@ -167,7 +167,6 @@ void PeakRMSCompressorWorkbenchAudioProcessor::prepareToPlay(double sampleRate, 
     outLevelFollower.prepare(sampleRate);
     inLevelFollower.setPeakDecay(0.3f);
     outLevelFollower.setPeakDecay(0.3f);
-    metrics.prepare(sampleRate);
 
     PresetParameters = createPresetParameters();
 }

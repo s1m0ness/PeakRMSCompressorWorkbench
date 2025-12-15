@@ -111,13 +111,11 @@ juce::AudioBuffer<float> Compressor::getGainReductionSignal()
 
 // APPLY COMPRESSION
 //==============================================================================
-void Compressor::process(juce::AudioBuffer<float>& buffer, bool isRMSmode)
+void Compressor::process(juce::AudioBuffer<float>& buffer, bool isRMSmode) // for real-time compression
 {
     if (!bypassed) {
         const auto numSamples = buffer.getNumSamples();
         const auto numChannels = buffer.getNumChannels();
-
-        resetSizeSignals();
 
         jassert(numSamples == static_cast<int>(sidechainSignal.size()));
 
@@ -156,7 +154,7 @@ void Compressor::applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSa
     // Compute attenuation - converts side-chain signal from linear to logarithmic domain
     gainComputer.applyCompressionToBuffer(rawSidechainSignal, numSamples); // Gain computer stage
 
-    if (trackGR) {
+    if (trackGR) { // for metrics extraction
         saveGainReductionSignal(numSamples, numChannels);
     }
 
@@ -183,7 +181,7 @@ void Compressor::setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSam
 
 void Compressor::applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, float makeup)
 {
-    // Get minimum = max. gain reduction from side chain buffer
+    // Get minimum = max. gain reduction from side chain buffer, for gain reduction metering
     maxGainReduction = juce::FloatVectorOperations::findMinimum(rawSidechainSignal, numSamples);
 
     // Add makeup gain and convert side-chain to linear domain
@@ -212,7 +210,7 @@ void Compressor::applyInputGain(juce::AudioBuffer<float>& buffer, int numSamples
     }
 }
 
-// ADDITIONAL FUNCTIONS
+// ADDITIONAL FUNCTIONS FOR METRICS EXTRACTION PROCESS (OFFLINE ANALYSIS)
 //==============================================================================
 void Compressor::saveGainReductionSignal(int numSamples, int numChannels)
 {
@@ -224,19 +222,19 @@ void Compressor::saveGainReductionSignal(int numSamples, int numChannels)
     }
 }
 
-// This is called during the metrics extraction process
-// when the entire audio gets compressed in chunks
-void Compressor::resizeSignals(int chunkSize)
+// This is called from MetricsExtractionEngine when the compressor operates on a loaded audio file
+void Compressor::prepareForMetricsExtraction(const juce::dsp::ProcessSpec& audioFilePs)
 {
-    sidechainSignal.resize(chunkSize, 0.0f);
-    originalSignal.setSize(2, chunkSize);
-    rawSidechainSignal = sidechainSignal.data(); 
+    levelDetector.prepare(audioFilePs.sampleRate);
+    originalSignal.setSize(2, audioFilePs.maximumBlockSize);
+    sidechainSignal.resize(audioFilePs.maximumBlockSize, 0.0f);
+    rawSidechainSignal = sidechainSignal.data();
+    originalSignal.clear();
 }
 
-// Resize to original dimensions
-void Compressor::resetSizeSignals()
+// This gets called from MetricsExtractionEngine when the extraction
+// is completed and the compressor operates again on audio provided by the host audio system
+void Compressor::prepareForRealTimeProcessing()
 {
-    sidechainSignal.resize(procSpec.maximumBlockSize, 0.0f); 
-    originalSignal.setSize(2, procSpec.maximumBlockSize);
-    rawSidechainSignal = sidechainSignal.data();
+    prepare(procSpec);
 }

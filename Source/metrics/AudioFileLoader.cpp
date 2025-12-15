@@ -34,6 +34,14 @@ AudioFileLoader::loadAudioFile(const juce::File& file, juce::String* error) cons
         return std::nullopt;
     }
 
+    // Enforce mono or stereo only
+    if (reader->numChannels < 1 || reader->numChannels > 2)
+    {
+        if (error)
+            *error = "Only mono and stereo audio files are supported.";
+        return std::nullopt;
+    }
+
     LoadedAudio out;
     out.sampleRate = reader->sampleRate;
 

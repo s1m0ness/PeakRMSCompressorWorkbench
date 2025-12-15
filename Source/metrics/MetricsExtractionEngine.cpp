@@ -110,12 +110,14 @@ void MetricsExtractionEngine::processBufferInChunks(juce::AudioBuffer<float>& gr
 {
     const int numSamples = audioBuffer.getNumSamples();
     const int numChannels = audioBuffer.getNumChannels();
-    const int chunkSize = cfg.chunkSize;
+    const int chunkSize =  cfg.chunkSize;
 
-    compressor.resizeSignals(chunkSize);
+    // the compressor now operates on a loaded audio signal during offline analysis
+    // so the compressor settings have to reflect loaded audio parameters
+    compressor.prepareForMetricsExtraction({ fileSampleRate, static_cast<uint32_t>(chunkSize), 2 });
 
-    juce::AudioBuffer<float> chunk;
-    chunk.setSize(numChannels, chunkSize, false, true, true);
+    juce::AudioBuffer<float> chunkBuffer;
+    chunkBuffer.setSize(numChannels, chunkSize, false, true, true);
 
     for (int start = 0; start < numSamples; start += chunkSize)
     {
@@ -123,22 +125,27 @@ void MetricsExtractionEngine::processBufferInChunks(juce::AudioBuffer<float>& gr
         if (n <= 0) continue;
 
         for (int ch = 0; ch < numChannels; ++ch)
-            chunk.copyFrom(ch, 0, audioBuffer, ch, start, n);
+            chunkBuffer.copyFrom(ch, 0, audioBuffer, ch, start, n);
 
-        if (isRMS) compressor.applyRMSCompression(chunk, n, numChannels, true);
-        else       compressor.applyPeakCompression(chunk, n, numChannels, true);
+        if (isRMS) compressor.applyRMSCompression(chunkBuffer, n, numChannels, true);
+        else       compressor.applyPeakCompression(chunkBuffer, n, numChannels, true);
 
         auto& gr = compressor.getGainReductionSignal();
         for (int ch = 0; ch < numChannels; ++ch)
             grBuffer.copyFrom(ch, start, gr, ch, 0, n);
 
         for (int ch = 0; ch < numChannels; ++ch)
-            audioBuffer.copyFrom(ch, start, chunk, ch, 0, n);
+            audioBuffer.copyFrom(ch, start, chunkBuffer, ch, 0, n);
     }
+
+    // Back to real time processing compressor settings after the compression is finished
+    compressor.prepareForRealTimeProcessing();
 }
 
 void MetricsExtractionEngine::getMetrics()
 {
+    metrics.prepare(fileSampleRate);
+
     metrics.setUncompressedSignal(&uncompressedSignal);
     metrics.setPeakGainReductionSignal(&peakGainReductionSignal);
     metrics.setPeakCompressedSignal(&peakCompressedSignal);
