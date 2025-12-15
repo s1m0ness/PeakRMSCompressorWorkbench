@@ -176,10 +176,11 @@ void Compressor::setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSam
     if ((int) sidechainRight.size() < numSamples)
         sidechainRight.resize((size_t)numSamples);
 
-    // Get maximum left and right channel magnitude values and fill sidechain signal
+    // Get absolute values of both left and right channel
     juce::FloatVectorOperations::abs(rawSidechainSignal, buffer.getReadPointer(0), numSamples);
     juce::FloatVectorOperations::abs(sidechainRight.data(), buffer.getReadPointer(1), numSamples);
 
+    // The gain reduction is based on the larger amplitude across the two channels
     juce::FloatVectorOperations::max(rawSidechainSignal,
         rawSidechainSignal,
         sidechainRight.data(),
