@@ -165,18 +165,27 @@ void Compressor::applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSa
 
 // AUDIO BUFFERS HANDLING FOR COMPRESSION AND LOG->LIN CONVERTER
 //==============================================================================
-void Compressor::setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSamples) {
-    
+void Compressor::setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSamples)
+{
     // Clear any old samples
     originalSignal.clear();
     juce::FloatVectorOperations::fill(rawSidechainSignal, 0.0f, numSamples);
     maxGainReduction = 0.0f;
 
-    // Get maximum left and right channel amplitude values and fill sidechain signal
-    juce::FloatVectorOperations::abs(rawSidechainSignal, buffer.getReadPointer(0), numSamples);
-    juce::FloatVectorOperations::max(rawSidechainSignal, rawSidechainSignal, buffer.getReadPointer(1), numSamples);
+    // Ensure the temp buffer exists
+    if ((int) sidechainRight.size() < numSamples)
+        sidechainRight.resize((size_t)numSamples);
 
+    // Get maximum left and right channel magnitude values and fill sidechain signal
+    juce::FloatVectorOperations::abs(rawSidechainSignal, buffer.getReadPointer(0), numSamples);
+    juce::FloatVectorOperations::abs(sidechainRight.data(), buffer.getReadPointer(1), numSamples);
+
+    juce::FloatVectorOperations::max(rawSidechainSignal,
+        rawSidechainSignal,
+        sidechainRight.data(),
+        numSamples);
 }
+
 
 void Compressor::applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, float makeup)
 {
@@ -198,6 +207,7 @@ void Compressor::applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer,
         juce::FloatVectorOperations::multiply(buffer.getWritePointer(i), rawSidechainSignal, buffer.getNumSamples());
     }
 }
+
 
 // ADDITIONAL FUNCTIONS FOR METRICS EXTRACTION PROCESS (OFFLINE ANALYSIS)
 //==============================================================================

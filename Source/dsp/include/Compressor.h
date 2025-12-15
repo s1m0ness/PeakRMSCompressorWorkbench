@@ -117,6 +117,8 @@ private:
     std::vector<float> sidechainSignal;
     float* rawSidechainSignal{ nullptr };
 
+    std::vector<float> sidechainRight;
+
     juce::AudioBuffer<float> gainReductionSignal;
 
     LevelDetector levelDetector;
