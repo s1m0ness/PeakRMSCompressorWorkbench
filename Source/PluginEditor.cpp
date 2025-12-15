@@ -111,6 +111,12 @@ PeakRMSCompressorWorkbenchAudioProcessorEditor::PeakRMSCompressorWorkbenchAudioP
     progressBar.setColour(juce::ProgressBar::foregroundColourId, juce::Colours::green);   // Foreground color
     progressBar.setVisible(false);
 
+    // Add notification label when extract metrics is finished
+    addAndMakeVisible(statusLabel);
+    statusLabel.setJustificationType(juce::Justification::centred);
+    statusLabel.setVisible(false);
+
+
     // EXTRACT METRICS AND PRESETS
     //==============================================================================
 
@@ -250,6 +256,10 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::resized()
     addSliderAndLabel(rightColumn, rmsReleaseLabel, rmsReleaseSlider, labelWidth);
     addSliderAndLabel(rightColumn, rmsKneeLabel, rmsKneeSlider, labelWidth);
     addSliderAndLabel(rightColumn, rmsMakeupLabel, rmsMakeupSlider, labelWidth);
+
+    // Notification label for metrics extraction
+    statusLabel.setBounds(10, 10, 250, 25);
+
 }
 
 
@@ -269,6 +279,14 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::timerCallback()
         break;
     default:
         break;
+    }
+
+    // Closing the notification for metrics extraction after some time
+    if (statusCountdownFrames > 0)
+    {
+        --statusCountdownFrames;
+        if (statusCountdownFrames == 0)
+            statusLabel.setVisible(false);
     }
 
     progressValue = audioProcessor.getMetricsExtractionEngine().getProgress();
@@ -390,10 +408,11 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics()
     // Let the metrics extraction run in a separate thread
     extractionThread = std::thread([this, &metricsExtractionEngine, file]()
         {
-            metricsExtractionEngine.run(file); // ENGINE decides validity
+            metricsExtractionEngine.run(file);
 
+            // After metrics extraction is finished, enable the GUI
             juce::MessageManager::callAsync([this]()
-                {
+                { 
                     powerButton.setToggleState(true, juce::dontSendNotification);
                     powerButton.setEnabled(true);
 
@@ -410,10 +429,10 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics()
 
                     progressBar.setVisible(false);
 
-                    juce::AlertWindow::showMessageBoxAsync(
-                        juce::AlertWindow::InfoIcon,
-                        "Done",
-                        "Metrics extraction finished.");
+                    statusLabel.setText("Metrics extraction finished.", juce::dontSendNotification);
+                    statusLabel.setVisible(true);
+                    statusCountdownFrames = 120; // ~2 seconds at 60 Hz
+
                 });
         });
     }

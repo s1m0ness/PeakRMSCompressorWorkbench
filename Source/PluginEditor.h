@@ -90,6 +90,10 @@ private:
     juce::ProgressBar progressBar{ progressValue };
     std::thread extractionThread;
 
+    // For notifying extraction is finished
+    juce::Label statusLabel;
+    int statusCountdownFrames = 0; 
+
     MeterBackground meterbg;
     Meter meter;
 
