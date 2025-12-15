@@ -126,11 +126,16 @@ void MetricsExtractionEngine::processBufferInChunks(juce::AudioBuffer<float>& gr
         const int n = std::min(chunkSize, numSamples - start);
         if (n <= 0) continue;
 
+        if (n < chunkSize) chunkBuffer.setSize(numChannels, n, false, true, true);
+
         for (int ch = 0; ch < numChannels; ++ch)
             chunkBuffer.copyFrom(ch, 0, audioBuffer, ch, start, n);
 
+        // compressor.process() isn't called directly because the compressor is bypassed
+        // during metrics extraction
         if (isRMS) compressor.applyRMSCompression(chunkBuffer, n, numChannels, true);
         else       compressor.applyPeakCompression(chunkBuffer, n, numChannels, true);
+
 
         auto& gr = compressor.getGainReductionSignal();
         for (int ch = 0; ch < numChannels; ++ch)

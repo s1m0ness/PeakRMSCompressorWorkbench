@@ -101,12 +101,11 @@ public:
 
     void prepareForMetricsExtraction(const juce::dsp::ProcessSpec& audioFilePs);
     void prepareForRealTimeProcessing();
-    
+
 private:
     //==============================================================================
     void setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSamples);
     void applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, float makeup);
-    void applyInputGain(juce::AudioBuffer<float>&, int);
 
     void saveGainReductionSignal(int numSamples, int numChannels);
    
@@ -129,6 +128,4 @@ private:
     
     float makeup{ 0.0f };
     float maxGainReduction{ 0.0f };
-    float input{ 0.0f };
-    float prevInput{ 0.0f };
 };

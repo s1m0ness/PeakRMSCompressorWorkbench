@@ -212,6 +212,10 @@ void PeakRMSCompressorWorkbenchAudioProcessor::processBlock(juce::AudioBuffer<fl
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     const auto numSamples = buffer.getNumSamples();
 
+    // Compressor design supports only two-channel (stereo) audio format
+    jassert(totalNumInputChannels == 2);
+    jassert(totalNumOutputChannels == 2);
+
     // Clear input buffer
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());

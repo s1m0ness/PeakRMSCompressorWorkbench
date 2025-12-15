@@ -127,6 +127,7 @@ void Compressor::process(juce::AudioBuffer<float>& buffer, bool isRMSmode) // fo
     }
 }
 
+// called directly from MetricsExtractionEngine in order to track the gain reduction signal for offline analysis
 void Compressor::applyPeakCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, bool trackGR)
 {
     setSidechainSignal(buffer, numSamples);
@@ -144,6 +145,7 @@ void Compressor::applyPeakCompression(juce::AudioBuffer<float>& buffer, int numS
     applyCompressionToInputSignal(buffer, numSamples, numChannels, getMakeup());
 }
 
+// called directly from MetricsExtractionEngine in order to track the gain reduction signal for offline analysis
 void Compressor::applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, bool trackGR)
 {
     setSidechainSignal(buffer, numSamples);
@@ -170,10 +172,7 @@ void Compressor::setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSam
     juce::FloatVectorOperations::fill(rawSidechainSignal, 0.0f, numSamples);
     maxGainReduction = 0.0f;
 
-    // Apply input gain
-    applyInputGain(buffer, numSamples);
-
-    // Get max l/r amplitude values and fill sidechain signal
+    // Get maximum left and right channel amplitude values and fill sidechain signal
     juce::FloatVectorOperations::abs(rawSidechainSignal, buffer.getReadPointer(0), numSamples);
     juce::FloatVectorOperations::max(rawSidechainSignal, rawSidechainSignal, buffer.getReadPointer(1), numSamples);
 
@@ -197,16 +196,6 @@ void Compressor::applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer,
     // Multiply attenuation with buffer - apply compression
     for (int i = 0; i < numChannels; ++i) {
         juce::FloatVectorOperations::multiply(buffer.getWritePointer(i), rawSidechainSignal, buffer.getNumSamples());
-    }
-}
-
-void Compressor::applyInputGain(juce::AudioBuffer<float>& buffer, int numSamples)
-{
-    if (prevInput == input) {
-        buffer.applyGain(0, numSamples, juce::Decibels::decibelsToGain(prevInput));
-    } else {
-        buffer.applyGainRamp(0, numSamples, juce::Decibels::decibelsToGain(prevInput), juce::Decibels::decibelsToGain(input));
-        prevInput = input;
     }
 }
 
