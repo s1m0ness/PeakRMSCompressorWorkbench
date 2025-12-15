@@ -396,6 +396,7 @@ void PeakRMSCompressorWorkbenchAudioProcessorEditor::handleExtractMetrics()
     powerButton.setEnabled(false);
     updateParameterState();
 
+    // bypass the compression
     audioProcessor.peakCompressor.setPower(true);
     audioProcessor.rmsCompressor.setPower(true);
 
