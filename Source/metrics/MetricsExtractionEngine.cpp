@@ -91,11 +91,13 @@ void MetricsExtractionEngine::compressAudioFile()
     const int numSamples = uncompressedSignal.getNumSamples();
     const int numChannels = uncompressedSignal.getNumChannels();
 
+    // Prepare clear buffers for storing compressed signals
     peakCompressedSignal.setSize(numChannels, numSamples, false, true, true);
     peakGainReductionSignal.setSize(numChannels, numSamples, false, true, true);
     rmsCompressedSignal.setSize(numChannels, numSamples, false, true, true);
     rmsGainReductionSignal.setSize(numChannels, numSamples, false, true, true);
 
+    // fill the buffers with uncompressed signal
     peakCompressedSignal.makeCopyOf(uncompressedSignal);
     rmsCompressedSignal.makeCopyOf(uncompressedSignal);
 
@@ -176,7 +178,6 @@ juce::String MetricsExtractionEngine::buildMetricsReport() const
 juce::String MetricsExtractionEngine::formatParameterBlock(const juce::String& title,
     const juce::String& prefix) const
 {
-    // One function handles both peak_ and rms_ so we don’t repeat the same crap twice.
     juce::String c;
     c << title << ":\n";
     c << "Threshold: " << getParam(prefix + "threshold") << ", ";

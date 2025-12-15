@@ -78,7 +78,7 @@ public:
     * @param buffer       The input audio buffer to be compressed.
     * @param numSamples   The number of samples in the current audio buffer.
     * @param numChannels  The number of audio channels in the current audio buffer.
-    * @param trackGR      Boolean flag to indicate whether to store the gain reduction signal for metrics extraction.
+    * @param trackGR      Boolean flag to indicate whether to store the gain reduction signal for offline analysis.
     */
     void applyPeakCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, bool trackGR);
 
@@ -95,13 +95,13 @@ public:
     * @param buffer       The input audio buffer to be compressed.
     * @param numSamples   The number of samples in the current audio buffer.
     * @param numChannels  The number of audio channels in the current audio buffer.
-    * @param trackGR      Boolean flag to indicate whether to store the gain reduction signal for analysis.
+    * @param trackGR      Boolean flag to indicate whether to store the gain reduction signal for offline analysis.
     */
     void applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, bool trackGR);
 
     void prepareForMetricsExtraction(const juce::dsp::ProcessSpec& audioFilePs);
     void prepareForRealTimeProcessing();
-
+    
 private:
     //==============================================================================
     void setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSamples);
