@@ -224,7 +224,6 @@ float Metrics::getDynamicRangeReductionLRA(float compressedLRA)
 
 float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuffer)
 {
-    constexpr float percentile = 0.90f; // top 10% strongest slopes
     constexpr float eps = 1.0e-12f;
 
     auto computeTransientStrengthPercentile = [](const juce::AudioBuffer<float>& buffer,
@@ -262,10 +261,10 @@ float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuff
         };
 
     const float uncompressedStrength =
-        computeTransientStrengthPercentile(*uncompressedMetrics.signal, percentile);
+        computeTransientStrengthPercentile(*uncompressedMetrics.signal, transientPercentile);
 
     const float compressedStrength =
-        computeTransientStrengthPercentile(compressedBuffer, percentile);
+        computeTransientStrengthPercentile(compressedBuffer, transientPercentile);
 
     if (uncompressedStrength <= eps)
         return 0.0f; // nothing to compare (silent or constant)
@@ -284,8 +283,6 @@ float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuff
 
 float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& compressedBuffer)
 {
-    const float transientThresholdMultiplier = 3.0f; // Multiplier for transient threshold
-
     // Split both signals into short-time windows
     std::vector<juce::AudioBuffer<float>> uncompressedWindows = getWindowsFromBuffer(*uncompressedMetrics.signal);
     std::vector<juce::AudioBuffer<float>> compressedWindows = getWindowsFromBuffer(compressedBuffer);
@@ -320,12 +317,9 @@ float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& co
 
     const float meanUncompressedRMS = sumUncompressedRMS / static_cast<float>(numWindows);
 
-    // Threshold for "transient / loud" windows (in linear units)
-    /*const float threshold = transientThresholdMultiplier * meanUncompressedRMS;*/
-
     auto sorted = uncompressedRMS;
     std::sort(sorted.begin(), sorted.end());
-    const float threshold = sorted[(size_t)(0.90f * (sorted.size() - 1))]; // top 10%
+    const float threshold = sorted[(size_t)(transientPercentile * (sorted.size() - 1))]; // top 10%
 
     // Accumulate energy in transient windows before and after compression
     float uncompressedEnergy = 0.0f;

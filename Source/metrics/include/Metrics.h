@@ -304,6 +304,8 @@ private:
     std::vector<float> getShortTermLoudness(juce::AudioBuffer<float>& buffer);
     
     //==============================================================================
+    float transientPercentile = 0.5f; // Top 50 % strongest slopes to be considered transients
+
     double sampleRate{ 0.0f };
 
     // for extracting windows for short-term calculations
