@@ -224,43 +224,63 @@ float Metrics::getDynamicRangeReductionLRA(float compressedLRA)
 
 float Metrics::getTransientImpact(const juce::AudioBuffer<float>& compressedBuffer)
 {
-    // Helper: compute a simple transient strength measure
-    auto computeTransientStrength =
-        [](const juce::AudioBuffer<float>& buffer) {
-        const int numSamples = buffer.getNumSamples();
-        const int numChannels = buffer.getNumChannels();
+    constexpr float percentile = 0.90f; // top 10% strongest slopes
+    constexpr float eps = 1.0e-12f;
 
-        float maxDelta = 0.0f;
-
-        for (int ch = 0; ch < numChannels; ++ch)
+    auto computeTransientStrengthPercentile = [](const juce::AudioBuffer<float>& buffer,
+        float pct) -> float
         {
-            const float* channelData = buffer.getReadPointer(ch);
+            const int numSamples = buffer.getNumSamples();
+            const int numChannels = buffer.getNumChannels();
 
-            for (int n = 1; n < numSamples; ++n)
+            if (numSamples < 2 || numChannels < 1)
+                return 0.0f;
+
+            std::vector<float> deltas;
+            deltas.reserve((size_t)numChannels * (size_t)(numSamples - 1));
+
+            for (int ch = 0; ch < numChannels; ++ch)
             {
-                const float delta = std::abs(channelData[n] - channelData[n - 1]);
-                if (delta > maxDelta)
-                    maxDelta = delta;
-            }
-        }
+                const float* x = buffer.getReadPointer(ch);
 
-        return maxDelta; // linear, 0..1-ish
+                for (int n = 1; n < numSamples; ++n)
+                    deltas.push_back(std::abs(x[n] - x[n - 1]));
+            }
+
+            if (deltas.empty())
+                return 0.0f;
+
+            pct = juce::jlimit(0.0f, 1.0f, pct);
+
+            const size_t last = deltas.size() - 1;
+            const size_t idx = (size_t)std::floor(pct * (float)last);
+
+            // nth_element gives the element that would be at idx in sorted order, without fully sorting
+            std::nth_element(deltas.begin(), deltas.begin() + (ptrdiff_t)idx, deltas.end());
+
+            return deltas[idx]; // linear
         };
 
-    const float uncompressedTransients = computeTransientStrength(*uncompressedMetrics.signal);
-    const float compressedTransients = computeTransientStrength(compressedBuffer);
+    const float uncompressedStrength =
+        computeTransientStrengthPercentile(*uncompressedMetrics.signal, percentile);
 
-    if (uncompressedTransients <= 0.0f)
-        return 0.0f; // no transient content to compare
+    const float compressedStrength =
+        computeTransientStrengthPercentile(compressedBuffer, percentile);
 
-    // Fraction of lost transient strength: 0 = no loss, 1 = fully flattened
-    float impact = (uncompressedTransients - compressedTransients) / uncompressedTransients;
+    if (uncompressedStrength <= eps)
+        return 0.0f; // nothing to compare (silent or constant)
 
-    // Clamp to [0, 1]
-    impact = juce::jlimit(0.0f, 1.0f, impact);
+    // Signed impact:
+    //  > 0  => transients got flatter (strength reduced)
+    //  < 0  => transients got sharper (strength increased)
+    float impact = 1.0f - (compressedStrength / uncompressedStrength);
+
+    // Clamp to a sane range so one weird file doesn't explode your plots
+    impact = juce::jlimit(-1.0f, 1.0f, impact);
 
     return impact;
 }
+
 
 float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& compressedBuffer)
 {
@@ -270,7 +290,6 @@ float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& co
     std::vector<juce::AudioBuffer<float>> uncompressedWindows = getWindowsFromBuffer(*uncompressedMetrics.signal);
     std::vector<juce::AudioBuffer<float>> compressedWindows = getWindowsFromBuffer(compressedBuffer);
 
-    // Basic safety: if something went wrong, bail out
     if (uncompressedWindows.empty() || uncompressedWindows.size() != compressedWindows.size())
         return 0.0f;
 
@@ -302,7 +321,11 @@ float Metrics::getTransientEnergyPreservation(const juce::AudioBuffer<float>& co
     const float meanUncompressedRMS = sumUncompressedRMS / static_cast<float>(numWindows);
 
     // Threshold for "transient / loud" windows (in linear units)
-    const float threshold = transientThresholdMultiplier * meanUncompressedRMS;
+    /*const float threshold = transientThresholdMultiplier * meanUncompressedRMS;*/
+
+    auto sorted = uncompressedRMS;
+    std::sort(sorted.begin(), sorted.end());
+    const float threshold = sorted[(size_t)(0.90f * (sorted.size() - 1))]; // top 10%
 
     // Accumulate energy in transient windows before and after compression
     float uncompressedEnergy = 0.0f;
