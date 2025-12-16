@@ -47,8 +47,6 @@ public:
         char* signalName{ };
         bool isCompressed{ false };
 
-        float makeup{ 0.0f };
-
         // Signal metrics
         float meanEnergy{ 0.0f };
         float rms{ 0.0f };
@@ -80,9 +78,7 @@ public:
             metricsContent << "-------------------\n";
             metricsContent << "Average energy in dB: " << juce::Decibels::gainToDecibels(meanEnergy) << "\n";
             metricsContent << "Peak value in dB: " << juce::Decibels::gainToDecibels(peak) << "\n";
-            if (isCompressed) metricsContent << "Peak value in dB (without makeup gain): " << juce::Decibels::gainToDecibels(peak) - makeup << "\n";
             metricsContent << "RMS value in dB: " << juce::Decibels::gainToDecibels(rms) << "\n";
-            if (isCompressed) metricsContent << "RMS value in dB (without makeup gain): " << juce::Decibels::gainToDecibels(rms) - makeup << "\n";
             metricsContent << "Crest factor in dB: " << crestFactor << "\n";
             metricsContent << "LUFS: " << lufs << "\n";
             metricsContent << "LRA: " << lra << "\n";
@@ -132,7 +128,7 @@ public:
 
 
     //==============================================================================
-    void extractMetrics(float peakMakeup, float rmsMakeup);
+    void extractMetrics();
 
 private:
     //==============================================================================

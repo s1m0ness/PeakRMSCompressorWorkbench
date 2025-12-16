@@ -159,7 +159,7 @@ void MetricsExtractionEngine::getMetrics()
     metrics.setRMSGainReductionSignal(&rmsGainReductionSignal);
     metrics.setRMSCompressedSignal(&rmsCompressedSignal);
 
-    metrics.extractMetrics(getParam("peak_makeup"), getParam("rms_makeup"));
+    metrics.extractMetrics();
 }
 
 juce::String MetricsExtractionEngine::buildMetricsReport() const

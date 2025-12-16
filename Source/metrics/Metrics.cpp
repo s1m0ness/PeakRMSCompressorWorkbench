@@ -88,14 +88,14 @@ const Metrics::CompressionMetrics& Metrics::getRMSMetrics() const
 }
 
 //==============================================================================
-void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
+void Metrics::extractMetrics()
 {
     if (!validateSignals()) {
         return;
     }
 
-    auto computeMetrics = [this](CompressionMetrics& metrics, float makeup) {
-        metrics.makeup = makeup;
+    auto computeMetrics = [this](CompressionMetrics& metrics) {
+
         
         // 1. Signal instensity and dynamic range metrics
         metrics.meanEnergy = getAverageEnergy(*metrics.signal);
@@ -123,9 +123,9 @@ void Metrics::extractMetrics(float peakMakeup, float rmsMakeup)
         }
         };
 
-    computeMetrics(uncompressedMetrics, 0.0f);
-    computeMetrics(peakMetrics, peakMakeup);
-    computeMetrics(rmsMetrics, rmsMakeup);
+    computeMetrics(uncompressedMetrics);
+    computeMetrics(peakMetrics);
+    computeMetrics(rmsMetrics);
 }
 
 // 1. Signal intensity and dynamic range metrics
