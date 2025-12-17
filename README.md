@@ -95,24 +95,14 @@ To set up and run this project, ensure you have the following installed:
 git clone https://github.com/s1m0ness/PeakRMSCompressorWorkbench.git
 ```
 
----
-
-#### 2. Run Setup Script
-Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
-```bash
-./setup.sh
-```
-
----
-
-#### 3. Install Visual Studio 2022
+#### 2. Install Visual Studio 2022
 *(Video reference: [23:17](https://youtu.be/Mo0Oco3Vimo?si=KT-B_rA4bZAtaKIj&t=1397))*
 - Download and install **[Visual Studio Community Edition 2022](https://visualstudio.microsoft.com/)**.
 - During installation, select the **Desktop Development with C++** workload.
 
 ---
 
-#### 4. Install JUCE Framework
+#### 3. Install JUCE Framework
 *(Video reference: [27:32](https://youtu.be/Mo0Oco3Vimo?si=JDXoQBc6IURfOlis&t=1652))*
 - Clone the JUCE repository:
   ```bash
@@ -126,7 +116,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 5. Modify VST3 Permissions
+#### 4. Modify VST3 Permissions
 *(Video reference: [37:36](https://youtu.be/Mo0Oco3Vimo?si=sD74MpbJAyOmU3MD&t=2256))*
 - Navigate to the following directory:
   ```plaintext
@@ -137,7 +127,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 6. Set Up AudioFilePlayerPlugin and JUCE Global Paths
+#### 5. Set Up AudioFilePlayerPlugin and JUCE Global Paths
 *(Video reference: [42:06](https://youtu.be/Mo0Oco3Vimo?si=l5YVJTxdnHX2p-Gb&t=2526), [29:32](https://youtu.be/Mo0Oco3Vimo?si=uqpybmnKDi5PjgDB&t=1772))*
 - Clone the AudioFilePlayerPlugin repository:
   ```bash
@@ -159,7 +149,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 - in Projucer, click on Visual Studio exporter and build the solution.
 ---
 
-#### 7. Set Up AudioPluginHost
+#### 6. Set Up AudioPluginHost
 *(Video reference: [35:32](https://youtu.be/Mo0Oco3Vimo?si=WoisnAayUc8t_EST&t=2132))*
 - Navigate to the JUCE AudioPluginHost directory:
   ```plaintext
@@ -169,7 +159,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 8. Configure the PeakRMSCompressorWorkbench Project
+#### 7. Configure the PeakRMSCompressorWorkbench Project
 *(Video reference: [36:06](https://youtu.be/Mo0Oco3Vimo?si=rt7h6I_aILSQKOo4&t=2166))*
 - Navigate to your `PeakRMSCompressorWorkbench` directory.
 - Open `PeakRMSCompressorWorkbench.projucer` in Projucer and open the project in Visual Studio.
@@ -184,7 +174,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 9. Test the Project
+#### 8. Test the Project
 *(Video reference: [38:49](https://youtu.be/Mo0Oco3Vimo?si=4A2KMZ622XDUdusK&t=2329))*
 - Set `PeakRMSCompressorWorkbench_VST3` as the startup project in Visual Studio.
 - Build and run the project.
@@ -224,21 +214,14 @@ git clone https://github.com/s1m0ness/PeakRMSCompressorWorkbench.git
 
 ---
 
-#### 2. Run Setup Script
-Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository root to ensure `Config.h` stays local and doesn't get committed accidentally:
-```bash
-./setup.sh
-```
 
----
-
-#### 3. Install Xcode
+#### 2. Install Xcode
 *(Video reference: [4:29](https://youtu.be/Mo0Oco3Vimo?si=NGacpIuxCvBcecZJ&t=269))*
 - Navigate to **Apple App Store** on your macOS device and download **Xcode**.
 
 ---
 
-#### 4. Install JUCE Framework
+#### 3. Install JUCE Framework
 *(Video reference: [6:37](https://youtu.be/Mo0Oco3Vimo?si=SGsWZG0RrVBUTWJp&t=397))*
 - Clone the JUCE repository:
   ```bash
@@ -252,7 +235,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 5. Set Up AudioFilePlayerPlugin and JUCE Global Paths
+#### 4. Set Up AudioFilePlayerPlugin and JUCE Global Paths
 *(Video reference: [19:54](https://youtu.be/Mo0Oco3Vimo?si=x6OzTUsqH1cD6vMb&t=1194), [10:05](https://youtu.be/Mo0Oco3Vimo?si=ZYL3jq7G3K8YuMSS&t=605))*
 - Clone the AudioFilePlayerPlugin repository:
   ```bash
@@ -275,7 +258,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 6. Set Up AudioPluginHost
+#### 5. Set Up AudioPluginHost
 *(Video reference: [15:25](https://youtu.be/Mo0Oco3Vimo?si=-IKkPU83JfS8Av58&t=925))*
 - Navigate to the JUCE AudioPluginHost directory:
   ```plaintext
@@ -285,7 +268,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 7. Configure the PeakRMSCompressorWorkbench Project
+#### 6. Configure the PeakRMSCompressorWorkbench Project
 *(Video reference: [15:50](https://youtu.be/Mo0Oco3Vimo?si=n3LgqH16tZhT7d0j&t=950))*
 - Navigate to your `PeakRMSCompressorWorkbench` directory.
 - Open `PeakRMSCompressorWorkbench.projucer` in Projucer and open in Xcode.
@@ -299,7 +282,7 @@ Run the `setup.sh` script located in the `PeakRMSCompressorWorkbench` repository
 
 ---
 
-#### 8. Test the Project
+#### 7. Test the Project
 *(Video reference: [16:26](https://youtu.be/Mo0Oco3Vimo?si=kwUowT6avbCAgVW0&t=986))*
 - Build and run the project.
 - In **AudioPluginHost**:
