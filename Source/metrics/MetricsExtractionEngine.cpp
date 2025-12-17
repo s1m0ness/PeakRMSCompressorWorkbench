@@ -73,11 +73,11 @@ void MetricsExtractionEngine::run(const juce::File& file)
     }
     catch (const std::exception& e)
     {
-        DBG("Metrics extraction failed: " + juce::String(e.what()));
+        throw std::runtime_error(e.what());
     }
     catch (...)
     {
-        DBG("Unknown error during metrics extraction.");
+        throw std::runtime_error("Unknown error during metrics extraction");;
     }
 
     processing = false;

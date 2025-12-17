@@ -461,19 +461,12 @@ void PeakRMSCompressorWorkbenchAudioProcessor::applyPreset(int presetId)
             if (auto* parameter = parameters.getParameter(paramID)) {
                 parameter->setValueNotifyingHost(parameters.getParameterRange(paramID).convertTo0to1(value));
             }
-            else {
-                DBG("Parameter not found: " + paramID);
-            }
-            };
+        };
 
         // Iterate over the parameters map and apply each parameter
         for (const auto& param : parametersMap) {
             setParameter(param.first, param.second);
         }
-        DBG("Preset '" + juce::String(preset.name) + "' (ID: " + juce::String(presetId) + ") applied successfully.");
-    }
-    else {
-        DBG("Error: Preset ID " + juce::String(presetId) + " does not exist.");
     }
 }
 
