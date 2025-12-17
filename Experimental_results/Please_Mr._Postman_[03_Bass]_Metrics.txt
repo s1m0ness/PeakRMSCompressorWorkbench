@@ -1,0 +1,67 @@
+Metrics Summary for: Please_Mr._Postman_[03_Bass].wav
+
+**Uncompressed signal**
+-------------------
+Average energy in dB: -46.1645
+Peak value in dB: -7.80434
+RMS value in dB: -23.0823
+Crest factor in dB: 15.2779
+LUFS: -39.4205
+LRA: 68.3523
+
+Compression parameter values for peak detection:
+Threshold: -20, Ratio: 4, Knee: 2, Attack: 20, Release: 60, Makeup Gain: 0.
+**Peak compressed signal**
+-------------------
+Average energy in dB: -48.3253
+Peak value in dB: -8.32907
+RMS value in dB: -24.1626
+Crest factor in dB: 15.8336
+LUFS: -41.5677
+LRA: 64.4117
+
+Metrics for highliting compression effects:
+-------------------
+Dynamic range reduction based on LRA in dB: 3.94053
+Dynamic range reduction based on crest factor in dB: -0.555643
+Transient impact: 0.0727922
+Transient energy preservation: 0.73871
+Total harmonic distortion: 0.152047
+
+Gain reduction signal metrics:
+-------------------
+Maximum gain reduction in dB: 4.65314
+Average gain reduction in dB: 0.587571
+Gain reduction energy in dB: 0.527183
+Standard deviation of gain reduction: 0.351311
+Rate of change of gain reduction: 1.35143
+Compression activity ratio: 0.90122
+
+Compression parameter values for rms detection:
+Threshold: -24, Ratio: 4, Knee: 2, Attack: 20, Release: 60, Makeup Gain: 0.
+**RMS compressed signal**
+-------------------
+Average energy in dB: -48.4803
+Peak value in dB: -7.97753
+RMS value in dB: -24.2402
+Crest factor in dB: 16.2626
+LUFS: -41.7206
+LRA: 63.4403
+
+Metrics for highliting compression effects:
+-------------------
+Dynamic range reduction based on LRA in dB: 4.91193
+Dynamic range reduction based on crest factor in dB: -0.984735
+Transient impact: 0.0686016
+Transient energy preservation: 0.703772
+Total harmonic distortion: 0.191398
+
+Gain reduction signal metrics:
+-------------------
+Maximum gain reduction in dB: 6.26892
+Average gain reduction in dB: 0.558071
+Gain reduction energy in dB: 0.643866
+Standard deviation of gain reduction: 0.410131
+Rate of change of gain reduction: 2.18444
+Compression activity ratio: 0.59894
+
