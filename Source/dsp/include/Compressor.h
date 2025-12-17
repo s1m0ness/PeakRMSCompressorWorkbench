@@ -107,7 +107,7 @@ private:
     void setSidechainSignal(juce::AudioBuffer<float>& buffer, int numSamples);
     void applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer, int numSamples, int numChannels, float makeup);
 
-    void saveGainReductionSignal(int numSamples, int numChannels);
+    void getGainReductionSignal(int numSamples, int numChannels);
    
 
     //Directly initialize process spec to avoid debugging problems
@@ -119,6 +119,7 @@ private:
 
     std::vector<float> sidechainRight;
 
+    // for offline metrics extraction
     juce::AudioBuffer<float> gainReductionSignal;
 
     LevelDetector levelDetector;

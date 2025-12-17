@@ -139,7 +139,7 @@ void Compressor::applyPeakCompression(juce::AudioBuffer<float>& buffer, int numS
     levelDetector.applyPeakDetector(rawSidechainSignal, numSamples); // Peak-based level detection stage 
 
     if (trackGR) { // for metrics extraction
-        saveGainReductionSignal(numSamples, numChannels);
+        getGainReductionSignal(numSamples, numChannels);
     }
 
     applyCompressionToInputSignal(buffer, numSamples, numChannels, getMakeup());
@@ -157,7 +157,7 @@ void Compressor::applyRMSCompression(juce::AudioBuffer<float>& buffer, int numSa
     gainComputer.applyCompressionToBuffer(rawSidechainSignal, numSamples); // Gain computer stage
 
     if (trackGR) { // for metrics extraction
-        saveGainReductionSignal(numSamples, numChannels);
+        getGainReductionSignal(numSamples, numChannels);
     }
 
     applyCompressionToInputSignal(buffer, numSamples, numChannels, getMakeup());
@@ -212,7 +212,7 @@ void Compressor::applyCompressionToInputSignal(juce::AudioBuffer<float>& buffer,
 
 // ADDITIONAL FUNCTIONS FOR METRICS EXTRACTION PROCESS (OFFLINE ANALYSIS)
 //==============================================================================
-void Compressor::saveGainReductionSignal(int numSamples, int numChannels)
+void Compressor::getGainReductionSignal(int numSamples, int numChannels)
 {
     gainReductionSignal.setSize(numChannels, numSamples, false, true, true);
     for (int channel = 0; channel < numChannels; ++channel) {

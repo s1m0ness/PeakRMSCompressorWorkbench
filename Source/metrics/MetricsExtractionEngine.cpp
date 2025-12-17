@@ -1,6 +1,34 @@
-#include "include/MetricsExtractionEngine.h"
+/*
+ * This file defines the MetricsExtractionEngine class, responsible for
+ * orchestrating the extraction of objective evaluation metrics for audio
+ * compression analysis.
+ *
+ * Key Features:
+ * - Loads and processes audio files for evaluation.
+ * - Applies both peak-based and RMS-based compression to the input signal.
+ * - Collects gain reduction and compressed audio signals.
+ * - Triggers metric computation and exports the resulting data.
+ * - Provides progress reporting for long-running analysis tasks.
+ *
+ * License:
+ * This file is part of the PeakRMSCompressorWorkbench project.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-// Include your actual headers here
+#pragma once
+#include "include/MetricsExtractionEngine.h"
 #include "../dsp/include/Compressor.h"
 #include "include/Metrics.h"
 
@@ -136,11 +164,12 @@ void MetricsExtractionEngine::processBufferInChunks(juce::AudioBuffer<float>& gr
         if (isRMS) compressor.applyRMSCompression(chunkBuffer, n, numChannels, true);
         else       compressor.applyPeakCompression(chunkBuffer, n, numChannels, true);
 
-
+        // store gain reduction singal for metrics extraction
         auto& gr = compressor.getGainReductionSignal();
         for (int ch = 0; ch < numChannels; ++ch)
             grBuffer.copyFrom(ch, start, gr, ch, 0, n);
 
+       // store the processed chunks in the full audio signal buffer
         for (int ch = 0; ch < numChannels; ++ch)
             audioBuffer.copyFrom(ch, start, chunkBuffer, ch, 0, n);
     }

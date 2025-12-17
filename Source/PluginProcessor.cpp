@@ -61,7 +61,7 @@ PeakRMSCompressorWorkbenchAudioProcessor::PeakRMSCompressorWorkbenchAudioProcess
         rmsCompressor,
         metrics,
         parameters,
-        MetricsExtractionEngine::Config{ 1024, 20 }
+        MetricsExtractionEngine::Config{ 1024 }
     )
 #endif
 {
